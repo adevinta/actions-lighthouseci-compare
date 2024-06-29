@@ -13,6 +13,9 @@ export const getBuilds = async ({
   const BUILD_LIST_URL = PROJECT_URL + '/builds?limit=20'
 
   const buildListResponse = await fetch(BUILD_LIST_URL)
+  if (!buildListResponse.ok) {
+    throw new Error(`[api-service][ERROR]: Could not get builds from LHCI API`)
+  }
   const builds = (await buildListResponse.json()) as BuildInterface[]
 
   // find the build that matches the commit hash
@@ -21,17 +24,22 @@ export const getBuilds = async ({
   )[0]
   if (!build?.id) {
     throw new Error(
-      `[${new Date().toISOString()}][api-service][ERROR]: Could not find build for commit hash {${CURRENT_COMMIT_SHA}}`
+      `[api-service][ERROR]: Could not find build for commit hash {${CURRENT_COMMIT_SHA}}`
     )
   }
   // get the ancestor of the build from the lighthouse-ci API
   const responseAncestor = await fetch(
     `${PROJECT_URL}/builds/${build.id}/ancestor`
   )
+  if (!responseAncestor.ok) {
+    throw new Error(
+      `[api-service][ERROR]: Could not get ancestor build for build {${build.id}}`
+    )
+  }
   const ancestorBuild: BuildInterface = await responseAncestor.json()
   if (!ancestorBuild?.id) {
     throw new Error(
-      `[${new Date().toISOString()}][api-service][ERROR]: Could not find ancestor build for build {${build.id}}`
+      `[api-service][ERROR]: Could not find ancestor build for build {${build.id}}`
     )
   }
   return { build, ancestorBuild }
@@ -53,6 +61,9 @@ export const getLighthouseCIRuns = async ({
     fetch(`${PROJECT_URL}/builds/${buildId}/runs?representative=true`),
     fetch(`${PROJECT_URL}/builds/${ancestorBuildId}/runs?representative=true`)
   ])
+  if (!runResponse.ok || !ancestorRunResponse.ok) {
+    throw new Error(`[api-service][ERROR]: Could not get runs from LHCI API`)
+  }
 
   const [runs, ancestorRuns] = await Promise.all([
     runResponse.json(),

@@ -46,3 +46,6 @@ export interface ComparisonResultsInterface {
   cls: ComparedRunInterface
   tbt: ComparedRunInterface
 }
+export interface ComparisonResultsByURLInterface {
+  [key: string]: ComparisonResultsInterface
+}

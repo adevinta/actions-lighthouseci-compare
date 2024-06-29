@@ -43,10 +43,10 @@ export const compareLHRs = ({
       const performance: Result.Category = runLHR.categories.performance
       const ancestorPerformance: Result.Category =
         ancestorRunLHR.categories.performance
-      const currentPerformance = performance.score ? performance.score : 0 * 100
-      const previousPerformance = ancestorPerformance.score
-        ? ancestorPerformance.score
-        : 0 * 100
+      const currentPerformance =
+        (performance.score ? performance.score : 0) * 100
+      const previousPerformance =
+        (ancestorPerformance.score ? ancestorPerformance.score : 0) * 100
       const diffPerformance = currentPerformance - previousPerformance
       const isPerformanceRegression = diffPerformance < 0
       const lcp: AuditResult = runLHR.audits[
@@ -138,6 +138,6 @@ export const getComparisonLinksObject = ({
   inputPath
 }: {
   inputPath: string
-}) => {
+}): { [key: string]: string } => {
   return readFileAsJson({ filepath: inputPath })
 }

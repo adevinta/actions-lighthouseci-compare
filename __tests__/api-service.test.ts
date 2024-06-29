@@ -44,6 +44,20 @@ describe('api-service', () => {
     // Additional assertions can be added here to verify the number of calls, call parameters, etc.
     expect(fetch).toHaveBeenCalledTimes(2)
   })
+  it('should throw error when build is not found', async () => {
+    ;(fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      json: async () => buildListFixture
+    })
+
+    const invalidInputs = {
+      ...inputs,
+      currentCommitSha: 'invalid-commit-sha'
+    }
+    await expect(getBuilds(invalidInputs)).rejects.toThrow(
+      `[api-service][ERROR]: Could not get builds from LHCI API`
+    )
+  })
   it('should get lighthouse ci runs', async () => {
     const buildId = '1d5c4421-6587-4f19-84d6-ed91c6aa7c60'
     const ancestorBuildId = '8dc197b7-4fb7-4245-80d6-808d06b4556c'
@@ -55,7 +69,7 @@ describe('api-service', () => {
       ok: true,
       json: async () => ancestorRunFixture
     })
-    const { run, ancestorRun } = await getLighthouseCIRuns({
+    const { runs, ancestorRuns } = await getLighthouseCIRuns({
       baseUrl: BASE_URL,
       projectId: PROJECT_ID,
       buildId,
@@ -63,8 +77,8 @@ describe('api-service', () => {
     })
 
     // Assertions to verify the behavior based on the mocked fetch calls
-    expect(run).toEqual(runFixture)
-    expect(ancestorRun).toEqual(ancestorRunFixture)
+    expect(runs).toEqual(runFixture)
+    expect(ancestorRuns).toEqual(ancestorRunFixture)
 
     // Additional assertions can be added here to verify the number of calls, call parameters, etc.
     expect(fetch).toHaveBeenCalledTimes(2)
