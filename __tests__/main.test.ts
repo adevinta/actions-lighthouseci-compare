@@ -12,7 +12,6 @@ import * as apiService from '../src/api-service'
 import {
   ancestorBuildFixture,
   ancestorRunFixture,
-  buildListFixture,
   currentBuildFixture,
   runFixture
 } from './api-service.fixtures'
@@ -122,43 +121,24 @@ describe('action', () => {
       12,
       expect.stringMatching(/Markdown Result/)
     )
-    // Verify that all of the core library functions were called correctly
-    // expect(debugMock).toHaveBeenNthCalledWith(1, 'Waiting 500 milliseconds ...')
-    // expect(debugMock).toHaveBeenNthCalledWith(
-    //   2,
-    //   expect.stringMatching(timeRegex)
-    // )
-    // expect(debugMock).toHaveBeenNthCalledWith(
-    //   3,
-    //   expect.stringMatching(timeRegex)
-    // )
-    // expect(setOutputMock).toHaveBeenNthCalledWith(
-    //   1,
-    //   'time',
-    //   expect.stringMatching(timeRegex)
-    // )
+    expect(setOutputMock).toHaveBeenCalledTimes(2)
     expect(errorMock).not.toHaveBeenCalled()
   })
 
-  // it('sets a failed status', async () => {
-  //   // Set the action's inputs as return values from core.getInput()
-  //   getInputMock.mockImplementation(name => {
-  //     switch (name) {
-  //       case 'milliseconds':
-  //         return 'this is not a number'
-  //       default:
-  //         return ''
-  //     }
-  //   })
+  it('sets a failed status', async () => {
+    // Set the action's inputs as return values from core.getInput()
+    // getBuildsMock.mockRejectedValue(
+    //   new Error(`[api-service][ERROR]: Could not get builds from LHCI API`)
+    // )
 
-  //   await main.run()
-  //   expect(runMock).toHaveReturned()
+    await main.run()
+    expect(runMock).toHaveReturned()
 
-  //   // Verify that all of the core library functions were called correctly
-  //   expect(setFailedMock).toHaveBeenNthCalledWith(
-  //     1,
-  //     'milliseconds not a number'
-  //   )
-  //   expect(errorMock).not.toHaveBeenCalled()
-  // })
+    // Verify that all of the core library functions were called correctly
+    expect(setFailedMock).toHaveBeenNthCalledWith(
+      1,
+      '[main][ERROR]Missing required inputs. Please check the action configuration.'
+    )
+    expect(errorMock).not.toHaveBeenCalled()
+  })
 })
