@@ -1,0 +1,5 @@
+{
+  "https://lhci-lighthouse-ci-comparison-lbc.polaris.ariane.leboncoin.ci/": "https://lhci.bon-coin.net/app/projects/ravnext/compare/53a135c7-fc1e-4d7e-8636-f4a2852b1e6c?compareUrl=https%3A%2F%2Flhci-BRANCH_NAME-lbc.polaris.ariane.leboncoin.ci%2F",
+  "https://lhci-lighthouse-ci-comparison-lbc.polaris.ariane.leboncoin.ci/_maison_jardin_/offres": "https://lhci.bon-coin.net/app/projects/ravnext/compare/53a135c7-fc1e-4d7e-8636-f4a2852b1e6c?compareUrl=https%3A%2F%2Flhci-BRANCH_NAME-lbc.polaris.ariane.leboncoin.ci%2F_maison_jardin_%2Foffres",
+  "https://lhci-lighthouse-ci-comparison-lbc.polaris.ariane.leboncoin.ci/classified/latest/12": "https://lhci.bon-coin.net/app/projects/ravnext/compare/53a135c7-fc1e-4d7e-8636-f4a2852b1e6c?compareUrl=https%3A%2F%2Flhci-BRANCH_NAME-lbc.polaris.ariane.leboncoin.ci%2Fclassified%2Flatest%2F12"
+}

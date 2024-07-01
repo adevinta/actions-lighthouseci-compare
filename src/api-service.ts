@@ -1,0 +1,74 @@
+import { BuildInterface, InputsInterface, RunInterface } from './types.d'
+
+export const getBuilds = async ({
+  baseUrl,
+  projectId,
+  currentCommitSha
+}: InputsInterface): Promise<{
+  build: BuildInterface
+  ancestorBuild: BuildInterface
+}> => {
+  const PROJECT_URL = `${baseUrl}/projects/${projectId}`
+  const CURRENT_COMMIT_SHA = currentCommitSha
+  const BUILD_LIST_URL = `${PROJECT_URL}/builds?limit=20`
+
+  console.log('Build LIst URL \n', BUILD_LIST_URL)
+  const buildListResponse = await fetch(BUILD_LIST_URL)
+  if (!buildListResponse.ok) {
+    throw new Error(`[api-service][ERROR]: Could not get builds from LHCI API`)
+  }
+  const builds = (await buildListResponse.json()) as BuildInterface[]
+
+  // find the build that matches the commit hash
+  const build: BuildInterface = builds.filter(
+    currentBuild => currentBuild.hash === CURRENT_COMMIT_SHA
+  )[0]
+  if (!build?.id) {
+    throw new Error(
+      `[api-service][ERROR]: Could not find build for commit hash {${CURRENT_COMMIT_SHA}}`
+    )
+  }
+  // get the ancestor of the build from the lighthouse-ci API
+  const responseAncestor = await fetch(
+    `${PROJECT_URL}/builds/${build.id}/ancestor`
+  )
+  if (!responseAncestor.ok) {
+    throw new Error(
+      `[api-service][ERROR]: Could not get ancestor build for build {${build.id}}`
+    )
+  }
+  const ancestorBuild: BuildInterface = await responseAncestor.json()
+  if (!ancestorBuild?.id) {
+    throw new Error(
+      `[api-service][ERROR]: Could not find ancestor build for build {${build.id}}`
+    )
+  }
+  return { build, ancestorBuild }
+}
+
+export const getLighthouseCIRuns = async ({
+  baseUrl,
+  projectId,
+  buildId,
+  ancestorBuildId
+}: {
+  baseUrl: string
+  projectId: string
+  buildId: string
+  ancestorBuildId: string
+}): Promise<{ runs: RunInterface[]; ancestorRuns: RunInterface[] }> => {
+  const PROJECT_URL = `${baseUrl}/projects/${projectId}`
+  const [runResponse, ancestorRunResponse] = await Promise.all([
+    fetch(`${PROJECT_URL}/builds/${buildId}/runs?representative=true`),
+    fetch(`${PROJECT_URL}/builds/${ancestorBuildId}/runs?representative=true`)
+  ])
+  if (!runResponse.ok || !ancestorRunResponse.ok) {
+    throw new Error(`[api-service][ERROR]: Could not get runs from LHCI API`)
+  }
+
+  const [runs, ancestorRuns] = await Promise.all([
+    runResponse.json() as unknown as RunInterface[],
+    ancestorRunResponse.json() as unknown as RunInterface[]
+  ])
+  return { runs, ancestorRuns }
+}

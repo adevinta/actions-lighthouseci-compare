@@ -52,13 +52,50 @@ jobs:
       - name: Checkout
         id: checkout
         uses: actions/checkout@v4
+      - name: Install node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install npm Dependencies
+        id: npm-ci
+        run: npm ci
+
+      - name: Start Mock Server
+        id: mock-server
+        run: |
+          npm run mock-server &
+          echo $! > "$(pwd)/mock-server.PID"
+          sleep 1 # Give it a moment before logging
+
+      - name: Wait for Mock Server
+        run: |
+          for i in {1..10}; do
+            echo "Attempt $i"
+            curl --fail http://localhost:3000/v1/ && echo "Mock server is up" && break || echo "Waiting for mock server..."
+            sleep 5
+          done
+
+      - name: Verify Mock Server is Up
+        run: |
+          curl --fail http://localhost:3000/v1/ || (echo "Mock server not accessible" && exit 1)
 
       - name: Test Local Action
         id: test-action
         uses: ./
         with:
-          milliseconds: 2000
+          links-filepath: '.lighthouseci/links.json'
+          base-url: 'http://localhost:3000/v1'
+          project-id: 'mock-project-id'
+          current-commit-sha: '59e778936f40d70edb2af15d61fdeb5cae661649'
 
       - name: Print Output
         id: output
-        run: echo "${{ steps.test-action.outputs.time }}"
+        run: |
+          echo "${{ steps.test-action.outputs.markdown }}"
+          echo "${{ steps.test-action.outputs.comparedMetrics }}"
+
+      - name: Kill Mock Server
+        if: always()
+        run: |
+          kill "$(cat mock-server.PID)"

@@ -24920,6 +24920,165 @@ exports["default"] = _default;
 
 /***/ }),
 
+/***/ 9675:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getLighthouseCIRuns = exports.getBuilds = void 0;
+const getBuilds = async ({ baseUrl, projectId, currentCommitSha }) => {
+    const PROJECT_URL = `${baseUrl}/projects/${projectId}`;
+    const CURRENT_COMMIT_SHA = currentCommitSha;
+    const BUILD_LIST_URL = `${PROJECT_URL}/builds?limit=20`;
+    console.log('Build LIst URL \n', BUILD_LIST_URL);
+    const buildListResponse = await fetch(BUILD_LIST_URL);
+    if (!buildListResponse.ok) {
+        throw new Error(`[api-service][ERROR]: Could not get builds from LHCI API`);
+    }
+    const builds = (await buildListResponse.json());
+    // find the build that matches the commit hash
+    const build = builds.filter(currentBuild => currentBuild.hash === CURRENT_COMMIT_SHA)[0];
+    if (!build?.id) {
+        throw new Error(`[api-service][ERROR]: Could not find build for commit hash {${CURRENT_COMMIT_SHA}}`);
+    }
+    // get the ancestor of the build from the lighthouse-ci API
+    const responseAncestor = await fetch(`${PROJECT_URL}/builds/${build.id}/ancestor`);
+    if (!responseAncestor.ok) {
+        throw new Error(`[api-service][ERROR]: Could not get ancestor build for build {${build.id}}`);
+    }
+    const ancestorBuild = await responseAncestor.json();
+    if (!ancestorBuild?.id) {
+        throw new Error(`[api-service][ERROR]: Could not find ancestor build for build {${build.id}}`);
+    }
+    return { build, ancestorBuild };
+};
+exports.getBuilds = getBuilds;
+const getLighthouseCIRuns = async ({ baseUrl, projectId, buildId, ancestorBuildId }) => {
+    const PROJECT_URL = `${baseUrl}/projects/${projectId}`;
+    const [runResponse, ancestorRunResponse] = await Promise.all([
+        fetch(`${PROJECT_URL}/builds/${buildId}/runs?representative=true`),
+        fetch(`${PROJECT_URL}/builds/${ancestorBuildId}/runs?representative=true`)
+    ]);
+    if (!runResponse.ok || !ancestorRunResponse.ok) {
+        throw new Error(`[api-service][ERROR]: Could not get runs from LHCI API`);
+    }
+    const [runs, ancestorRuns] = await Promise.all([
+        runResponse.json(),
+        ancestorRunResponse.json()
+    ]);
+    return { runs, ancestorRuns };
+};
+exports.getLighthouseCIRuns = getLighthouseCIRuns;
+
+
+/***/ }),
+
+/***/ 355:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getComparisonLinksObject = exports.readFileAsJson = exports.compareLHRs = void 0;
+const fs_1 = __importDefault(__nccwpck_require__(7147));
+const path_1 = __importDefault(__nccwpck_require__(1017));
+const compareLHRs = ({ runs, ancestorRuns }) => {
+    const buildLHR = runs.map(run => {
+        const parsedLHR = { ...run };
+        if (typeof run.lhr === 'string') {
+            parsedLHR.lhr = JSON.parse(run.lhr);
+        }
+        return parsedLHR;
+    });
+    const ancestorBuildLHR = ancestorRuns.map(run => {
+        const parsedLHR = { ...run };
+        if (typeof run.lhr === 'string') {
+            parsedLHR.lhr = JSON.parse(run.lhr);
+        }
+        return parsedLHR;
+    });
+    // create object with the url as key
+    const buildLHRObject = {};
+    for (const run of buildLHR) {
+        // find the ancestor run that matches the current run URL
+        const ancestorRun = ancestorBuildLHR.filter(currentAncestorRun => currentAncestorRun.url === run.url)[0];
+        if (typeof run.lhr !== 'string' || typeof ancestorRun.lhr !== 'string') {
+            const runLHR = run.lhr;
+            const ancestorRunLHR = ancestorRun.lhr;
+            // get the performance score, lcp, tbt and cls of the current run and the ancestor run and compare them
+            const performance = runLHR.categories.performance;
+            const ancestorPerformance = ancestorRunLHR.categories.performance;
+            const currentPerformance = (performance.score ? performance.score : 0) * 100;
+            const previousPerformance = (ancestorPerformance.score ? ancestorPerformance.score : 0) * 100;
+            const diffPerformance = currentPerformance - previousPerformance;
+            const isPerformanceRegression = diffPerformance < 0;
+            const lcp = runLHR.audits['largest-contentful-paint'];
+            const ancestorLCP = ancestorRunLHR.audits['largest-contentful-paint'];
+            const currentLCP = parseFloat((lcp.numericValue ? lcp.numericValue : 0).toFixed(0));
+            const previousLCP = parseFloat((ancestorLCP.numericValue ? ancestorLCP.numericValue : 0).toFixed(0));
+            const diffLCP = currentLCP - previousLCP;
+            const isLCPRegression = diffLCP > 0;
+            const tbt = runLHR.audits['total-blocking-time'];
+            const ancestorTBT = ancestorRunLHR.audits['total-blocking-time'];
+            const currentTBT = parseFloat((tbt.numericValue ? tbt.numericValue : 0).toFixed(0));
+            const previousTBT = parseFloat((ancestorTBT.numericValue ? ancestorTBT.numericValue : 0).toFixed(0));
+            const diffTBT = currentTBT - previousTBT;
+            const isTBTRegression = diffTBT > 0;
+            const cls = runLHR.audits['cumulative-layout-shift'];
+            const ancestorCLS = ancestorRunLHR.audits['cumulative-layout-shift'];
+            const currentCLS = parseFloat((cls.numericValue ? cls.numericValue : 0).toFixed(3));
+            const previousCLS = parseFloat((ancestorCLS.numericValue ? ancestorCLS.numericValue : 0).toFixed(3));
+            const diffCLS = currentCLS - previousCLS;
+            const isCLSRegression = diffCLS > 0;
+            // we will simplify the url to only be the pathname
+            const urlKey = new URL(run.url).pathname;
+            buildLHRObject[urlKey] = {
+                performance: {
+                    currentValue: currentPerformance,
+                    previousValue: previousPerformance,
+                    diff: diffPerformance,
+                    isRegression: isPerformanceRegression
+                },
+                lcp: {
+                    currentValue: currentLCP,
+                    previousValue: previousLCP,
+                    diff: diffLCP,
+                    isRegression: isLCPRegression
+                },
+                cls: {
+                    currentValue: currentCLS,
+                    previousValue: previousCLS,
+                    diff: diffCLS,
+                    isRegression: isCLSRegression
+                },
+                tbt: {
+                    currentValue: currentTBT,
+                    previousValue: previousTBT,
+                    diff: diffTBT,
+                    isRegression: isTBTRegression
+                }
+            };
+        }
+    }
+    return buildLHRObject;
+};
+exports.compareLHRs = compareLHRs;
+const readFileAsJson = ({ filepath }) => {
+    return JSON.parse(fs_1.default.readFileSync(path_1.default.resolve(__dirname, filepath), 'utf-8'));
+};
+exports.readFileAsJson = readFileAsJson;
+const getComparisonLinksObject = ({ inputPath }) => {
+    return (0, exports.readFileAsJson)({ filepath: inputPath });
+};
+exports.getComparisonLinksObject = getComparisonLinksObject;
+
+
+/***/ }),
+
 /***/ 399:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -24948,25 +25107,43 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.executeRun = void 0;
 exports.run = run;
 const core = __importStar(__nccwpck_require__(2186));
-const wait_1 = __nccwpck_require__(5259);
+const api_service_1 = __nccwpck_require__(9675);
+const compare_service_1 = __nccwpck_require__(355);
+const markdown_service_1 = __nccwpck_require__(5076);
+const path_1 = __importDefault(__nccwpck_require__(1017));
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 async function run() {
     try {
-        const ms = core.getInput('milliseconds');
-        // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-        core.debug(`Waiting ${ms} milliseconds ...`);
-        // Log the current timestamp, wait, then log the new timestamp
-        core.debug(new Date().toTimeString());
-        await (0, wait_1.wait)(parseInt(ms, 10));
-        core.debug(new Date().toTimeString());
-        // Set outputs for other workflow steps to use
-        core.setOutput('time', new Date().toTimeString());
+        const inputs = {
+            linksFilePath: path_1.default.resolve(process.cwd(), core.getInput('links-filepath')), // Resolve path
+            baseUrl: core.getInput('base-url'),
+            projectId: core.getInput('project-id'),
+            currentCommitSha: core.getInput('current-commit-sha')
+        };
+        if (!inputs.linksFilePath ||
+            !inputs.baseUrl ||
+            !inputs.projectId ||
+            !inputs.currentCommitSha) {
+            throw new Error('[main][ERROR]Missing required inputs. Please check the action configuration.');
+        }
+        const { markdownResult, comparedMetrics } = await (0, exports.executeRun)({
+            inputs,
+            debug: core.debug
+        });
+        /* istanbul ignore next */
+        core.setOutput('markdown', markdownResult);
+        /* istanbul ignore next */
+        core.setOutput('comparedMetrics', comparedMetrics);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
@@ -24974,30 +25151,106 @@ async function run() {
             core.setFailed(error.message);
     }
 }
+const executeRun = async ({ inputs, debug }) => {
+    debug('Running action and printing inputs...');
+    debug(`Inputs: ${JSON.stringify(inputs, null, 2)}`);
+    const { build, ancestorBuild } = await (0, api_service_1.getBuilds)(inputs);
+    debug('Printing build and ancestor build...');
+    debug(`Build: ${JSON.stringify(build, null, 2)}`);
+    debug(`Ancestor Build: ${JSON.stringify(ancestorBuild, null, 2)}`);
+    const { runs, ancestorRuns } = await (0, api_service_1.getLighthouseCIRuns)({
+        baseUrl: inputs.baseUrl,
+        projectId: inputs.projectId,
+        buildId: build.id,
+        ancestorBuildId: ancestorBuild.id
+    });
+    debug('Printing runs and ancestor runs...');
+    debug(`Run: ${runs}}`);
+    debug(`Ancestor Run: ${ancestorRuns}`);
+    const comparedMetrics = (0, compare_service_1.compareLHRs)({ runs, ancestorRuns });
+    debug('Printing compared metrics...');
+    debug(`Compared Results: ${comparedMetrics}`);
+    const markdownResult = (0, markdown_service_1.formatReportComparisonAsMarkdown)({
+        comparedMetrics,
+        inputPath: inputs.linksFilePath
+    });
+    debug('Printing markdown result and compared metrics...');
+    /* istanbul ignore next */
+    debug(`Markdown Result: \n${markdownResult}`);
+    return { markdownResult, comparedMetrics };
+};
+exports.executeRun = executeRun;
 
 
 /***/ }),
 
-/***/ 5259:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ 5076:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.wait = wait;
-/**
- * Wait for a number of milliseconds.
- * @param milliseconds The number of milliseconds to wait.
- * @returns {Promise<string>} Resolves with 'done!' after the wait is over.
- */
-async function wait(milliseconds) {
-    return new Promise(resolve => {
-        if (isNaN(milliseconds)) {
-            throw new Error('milliseconds not a number');
-        }
-        setTimeout(() => resolve('done!'), milliseconds);
-    });
-}
+exports.formatReportComparisonAsMarkdown = exports.createMarkdownTableRow = exports.getMarkdownTableCell = void 0;
+const compare_service_1 = __nccwpck_require__(355);
+const getMarkdownTableCell = ({ currentValue, isRegression, diffValue, metricUnit, metricType }) => {
+    if (metricType === 'performance') {
+        return `[${currentValue}${metricUnit} ${isRegression ? '🔴' : '🟢'}](## "Performance has  ${isRegression ? 'decreased in ' : 'improved in +'}${diffValue} points")`;
+    }
+    else if (metricType === 'lcp' || metricType === 'tbt') {
+        return `[${currentValue} ms ${isRegression ? '🔴' : '🟢'}](## "The ${metricType} has ${isRegression ? 'increased in +' : 'decreased in '}${diffValue} ms")`;
+    }
+    else if (metricType === 'cls') {
+        return `[${currentValue} ${isRegression ? '🔴' : '🟢'}](## "The CLS has ${isRegression ? 'increased in +' : 'decreased in'} ${diffValue}")`;
+    }
+    else {
+        return '';
+    }
+};
+exports.getMarkdownTableCell = getMarkdownTableCell;
+const createMarkdownTableRow = ({ url, comparedMetrics, link }) => {
+    const urlPathname = new URL(url).pathname;
+    const { performance, lcp, tbt, cls } = comparedMetrics[urlPathname];
+    return `| [${new URL(url).pathname}](${url}) | ${(0, exports.getMarkdownTableCell)({
+        currentValue: performance.currentValue,
+        isRegression: performance.isRegression,
+        diffValue: performance.diff,
+        metricType: 'performance',
+        metricUnit: '/100'
+    })} | ${(0, exports.getMarkdownTableCell)({
+        currentValue: lcp.currentValue,
+        isRegression: lcp.isRegression,
+        diffValue: lcp.diff,
+        metricUnit: 'ms',
+        metricType: 'lcp'
+    })} | ${(0, exports.getMarkdownTableCell)({
+        currentValue: cls.currentValue,
+        isRegression: cls.isRegression,
+        diffValue: cls.diff,
+        metricUnit: '',
+        metricType: 'cls'
+    })} | ${(0, exports.getMarkdownTableCell)({
+        currentValue: tbt.currentValue,
+        isRegression: tbt.isRegression,
+        diffValue: tbt.diff,
+        metricUnit: 'ms',
+        metricType: 'tbt'
+    })} | [Report](${link}) |`;
+};
+exports.createMarkdownTableRow = createMarkdownTableRow;
+/* istanbul ignore next */
+const formatReportComparisonAsMarkdown = ({ comparedMetrics, inputPath }) => {
+    const comparison = (0, compare_service_1.getComparisonLinksObject)({ inputPath });
+    return `
+| URL | Performance | LCP | CLS | TBT | Link to Report |
+|:--- |:-----------:| ---:| ---:| ---:|:-------------- |
+${Object.entries(comparison)
+        .map(([url, link]) => {
+        return (0, exports.createMarkdownTableRow)({ url, comparedMetrics, link });
+    })
+        .join('\n')}
+`.toString();
+};
+exports.formatReportComparisonAsMarkdown = formatReportComparisonAsMarkdown;
 
 
 /***/ }),

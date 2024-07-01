@@ -8,13 +8,24 @@
 
 import * as core from '@actions/core'
 import * as main from '../src/main'
+import * as apiService from '../src/api-service'
+import {
+  ancestorBuildFixture,
+  ancestorRunFixture,
+  currentBuildFixture,
+  runFixture
+} from './api-service.fixtures'
+import fs from 'fs'
+import { linksJsonFixture } from './compare-service.fixtures'
 
 // Mock the action's main function
 const runMock = jest.spyOn(main, 'run')
 
-// Other utilities
-const timeRegex = /^\d{2}:\d{2}:\d{2}/
-
+// API service mocks
+let getBuildsMock: jest.SpiedFunction<typeof apiService.getBuilds>
+let getLighthouseCIRunsMock: jest.SpiedFunction<
+  typeof apiService.getLighthouseCIRuns
+>
 // Mock the GitHub Actions core library
 let debugMock: jest.SpiedFunction<typeof core.debug>
 let errorMock: jest.SpiedFunction<typeof core.error>
@@ -31,49 +42,97 @@ describe('action', () => {
     getInputMock = jest.spyOn(core, 'getInput').mockImplementation()
     setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation()
     setOutputMock = jest.spyOn(core, 'setOutput').mockImplementation()
+    // set api service mocks
+    getBuildsMock = jest.spyOn(apiService, 'getBuilds')
+    getLighthouseCIRunsMock = jest.spyOn(apiService, 'getLighthouseCIRuns')
+    // mock filesystem module
+    jest.mock('fs')
   })
 
-  it('sets the time output', async () => {
+  it('sets the compared metrics and the markdown table', async () => {
     // Set the action's inputs as return values from core.getInput()
     getInputMock.mockImplementation(name => {
       switch (name) {
-        case 'milliseconds':
-          return '500'
+        case 'links-filepath':
+          return '.lighthouseci/links.json'
+        case 'base-url':
+          return 'https://lhci.bon-coin.net/v1'
+        case 'project-id':
+          return '765d9149-b2fd-486e-9e4c-bd38f02012c1'
+        case 'current-commit-sha':
+          return '59e778936f40d70edb2af15d61fdeb5cae661642'
         default:
           return ''
       }
     })
+    // Mock the API service functions
+    getBuildsMock.mockResolvedValue({
+      build: currentBuildFixture,
+      ancestorBuild: ancestorBuildFixture
+    })
+    getLighthouseCIRunsMock.mockResolvedValue({
+      runs: runFixture,
+      ancestorRuns: ancestorRunFixture
+    })
+
+    fs.readFileSync = jest
+      .fn()
+      .mockReturnValue(JSON.stringify(linksJsonFixture))
 
     await main.run()
     expect(runMock).toHaveReturned()
-
-    // Verify that all of the core library functions were called correctly
-    expect(debugMock).toHaveBeenNthCalledWith(1, 'Waiting 500 milliseconds ...')
+    expect(debugMock).toHaveBeenCalledTimes(12)
+    expect(debugMock).toHaveBeenNthCalledWith(
+      1,
+      'Running action and printing inputs...'
+    )
     expect(debugMock).toHaveBeenNthCalledWith(
       2,
-      expect.stringMatching(timeRegex)
+      expect.stringMatching(/Inputs/)
     )
     expect(debugMock).toHaveBeenNthCalledWith(
       3,
-      expect.stringMatching(timeRegex)
+      'Printing build and ancestor build...'
     )
-    expect(setOutputMock).toHaveBeenNthCalledWith(
-      1,
-      'time',
-      expect.stringMatching(timeRegex)
+    expect(debugMock).toHaveBeenNthCalledWith(4, expect.stringMatching(/Build/))
+    expect(debugMock).toHaveBeenNthCalledWith(
+      5,
+      expect.stringMatching(/Ancestor Build/)
     )
+    expect(debugMock).toHaveBeenNthCalledWith(
+      6,
+      'Printing runs and ancestor runs...'
+    )
+    expect(debugMock).toHaveBeenNthCalledWith(7, expect.stringMatching(/Run/))
+    expect(debugMock).toHaveBeenNthCalledWith(
+      8,
+      expect.stringMatching(/Ancestor Run/)
+    )
+    expect(debugMock).toHaveBeenNthCalledWith(9, 'Printing compared metrics...')
+    expect(debugMock).toHaveBeenNthCalledWith(
+      10,
+      expect.stringMatching(/Compared Results/)
+    )
+    expect(debugMock).toHaveBeenNthCalledWith(
+      11,
+      expect.stringMatching(/Printing markdown result and compared metrics.../)
+    )
+    expect(debugMock).toHaveBeenNthCalledWith(
+      12,
+      expect.stringMatching(/Markdown Result/)
+    )
+    expect(setOutputMock).toHaveBeenCalledTimes(2)
     expect(errorMock).not.toHaveBeenCalled()
   })
 
-  it('sets a failed status', async () => {
+  it('sets a failed status if inputs are empty', async () => {
     // Set the action's inputs as return values from core.getInput()
-    getInputMock.mockImplementation(name => {
-      switch (name) {
-        case 'milliseconds':
-          return 'this is not a number'
-        default:
-          return ''
-      }
+    // getBuildsMock.mockRejectedValue(
+    //   new Error(`[api-service][ERROR]: Could not get builds from LHCI API`)
+    // )
+    // all inputs are empty
+    getInputMock.mockImplementation(() => {
+      return ''
     })
 
     await main.run()
@@ -82,7 +141,7 @@ describe('action', () => {
     // Verify that all of the core library functions were called correctly
     expect(setFailedMock).toHaveBeenNthCalledWith(
       1,
-      'milliseconds not a number'
+      '[main][ERROR]Missing required inputs. Please check the action configuration.'
     )
     expect(errorMock).not.toHaveBeenCalled()
   })
