@@ -53,12 +53,29 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
+      - name: Start Mock Server
+        id: mock-server
+        run: |
+          nohup npm run mock-server > /dev/null 2>&1 &
+          echo $! > mock-server.PID
+
+      - name: Wait for Mock Server
+        run: sleep 5 # Waits for 5 seconds. Adjust the time based on your server's startup time.
+
       - name: Test Local Action
         id: test-action
         uses: ./
         with:
-          milliseconds: 2000
+          links-filepath: '.lighthouseci/links.json'
+          base-url: 'https://localhost:3000/v1'
+          project-id: 'mock-project-id'
+          current-commit-sha: '59e778936f40d70edb2af15d61fdeb5cae661649'
 
       - name: Print Output
         id: output
-        run: echo "${{ steps.test-action.outputs.time }}"
+        run: echo "${{ steps.test-action.outputs.markdown }}"
+
+      - name: Kill Mock Server
+        if: always()
+        run: |
+          kill $(cat mock-server.PID)
