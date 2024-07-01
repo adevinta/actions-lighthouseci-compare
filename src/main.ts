@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import { InputsInterface } from './types.d'
+import { ComparisonResultsByURLInterface, InputsInterface } from './types.d'
 import { getBuilds, getLighthouseCIRuns } from './api-service'
 import { compareLHRs } from './compare-service'
 import { formatReportComparisonAsMarkdown } from './markdown-service'
@@ -48,8 +48,11 @@ export const executeRun = async ({
   debug
 }: {
   inputs: InputsInterface
-  debug: any
-}) => {
+  debug: typeof core.debug
+}): Promise<{
+  markdownResult: string
+  comparedMetrics: ComparisonResultsByURLInterface
+}> => {
   debug('Running action and printing inputs...')
   debug(`Inputs: ${JSON.stringify(inputs, null, 2)}`)
   const { build, ancestorBuild } = await getBuilds(inputs)

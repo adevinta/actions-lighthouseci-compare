@@ -12,6 +12,7 @@ export const getBuilds = async ({
   const CURRENT_COMMIT_SHA = currentCommitSha
   const BUILD_LIST_URL = `${PROJECT_URL}/builds?limit=20`
 
+  console.log('Build LIst URL \n', BUILD_LIST_URL)
   const buildListResponse = await fetch(BUILD_LIST_URL)
   if (!buildListResponse.ok) {
     throw new Error(`[api-service][ERROR]: Could not get builds from LHCI API`)

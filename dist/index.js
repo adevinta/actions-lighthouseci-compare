@@ -24931,6 +24931,7 @@ const getBuilds = async ({ baseUrl, projectId, currentCommitSha }) => {
     const PROJECT_URL = `${baseUrl}/projects/${projectId}`;
     const CURRENT_COMMIT_SHA = currentCommitSha;
     const BUILD_LIST_URL = `${PROJECT_URL}/builds?limit=20`;
+    console.log('Build LIst URL \n', BUILD_LIST_URL);
     const buildListResponse = await fetch(BUILD_LIST_URL);
     if (!buildListResponse.ok) {
         throw new Error(`[api-service][ERROR]: Could not get builds from LHCI API`);
@@ -25106,12 +25107,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.executeRun = void 0;
 exports.run = run;
 const core = __importStar(__nccwpck_require__(2186));
 const api_service_1 = __nccwpck_require__(9675);
 const compare_service_1 = __nccwpck_require__(355);
 const markdown_service_1 = __nccwpck_require__(5076);
+const path_1 = __importDefault(__nccwpck_require__(1017));
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -25119,7 +25125,7 @@ const markdown_service_1 = __nccwpck_require__(5076);
 async function run() {
     try {
         const inputs = {
-            linksFilePath: core.getInput('links-filepath'),
+            linksFilePath: path_1.default.resolve(process.cwd(), core.getInput('links-filepath')), // Resolve path
             baseUrl: core.getInput('base-url'),
             projectId: core.getInput('project-id'),
             currentCommitSha: core.getInput('current-commit-sha')
@@ -25130,31 +25136,10 @@ async function run() {
             !inputs.currentCommitSha) {
             throw new Error('[main][ERROR]Missing required inputs. Please check the action configuration.');
         }
-        core.debug('Running action and printing inputs...');
-        core.debug(`Inputs: ${JSON.stringify(inputs, null, 2)}`);
-        const { build, ancestorBuild } = await (0, api_service_1.getBuilds)(inputs);
-        core.debug('Printing build and ancestor build...');
-        core.debug(`Build: ${JSON.stringify(build, null, 2)}`);
-        core.debug(`Ancestor Build: ${JSON.stringify(ancestorBuild, null, 2)}`);
-        const { runs, ancestorRuns } = await (0, api_service_1.getLighthouseCIRuns)({
-            baseUrl: inputs.baseUrl,
-            projectId: inputs.projectId,
-            buildId: build.id,
-            ancestorBuildId: ancestorBuild.id
+        const { markdownResult, comparedMetrics } = await (0, exports.executeRun)({
+            inputs,
+            debug: core.debug
         });
-        core.debug('Printing runs and ancestor runs...');
-        core.debug(`Run: ${runs}}`);
-        core.debug(`Ancestor Run: ${ancestorRuns}`);
-        const comparedMetrics = (0, compare_service_1.compareLHRs)({ runs, ancestorRuns });
-        core.debug('Printing compared metrics...');
-        core.debug(`Compared Results: ${comparedMetrics}`);
-        const markdownResult = (0, markdown_service_1.formatReportComparisonAsMarkdown)({
-            comparedMetrics,
-            inputPath: inputs.linksFilePath
-        });
-        core.debug('Printing markdown result and compared metrics...');
-        /* istanbul ignore next */
-        core.debug(`Markdown Result: \n${markdownResult}`);
         /* istanbul ignore next */
         core.setOutput('markdown', markdownResult);
         /* istanbul ignore next */
@@ -25166,6 +25151,35 @@ async function run() {
             core.setFailed(error.message);
     }
 }
+const executeRun = async ({ inputs, debug }) => {
+    debug('Running action and printing inputs...');
+    debug(`Inputs: ${JSON.stringify(inputs, null, 2)}`);
+    const { build, ancestorBuild } = await (0, api_service_1.getBuilds)(inputs);
+    debug('Printing build and ancestor build...');
+    debug(`Build: ${JSON.stringify(build, null, 2)}`);
+    debug(`Ancestor Build: ${JSON.stringify(ancestorBuild, null, 2)}`);
+    const { runs, ancestorRuns } = await (0, api_service_1.getLighthouseCIRuns)({
+        baseUrl: inputs.baseUrl,
+        projectId: inputs.projectId,
+        buildId: build.id,
+        ancestorBuildId: ancestorBuild.id
+    });
+    debug('Printing runs and ancestor runs...');
+    debug(`Run: ${runs}}`);
+    debug(`Ancestor Run: ${ancestorRuns}`);
+    const comparedMetrics = (0, compare_service_1.compareLHRs)({ runs, ancestorRuns });
+    debug('Printing compared metrics...');
+    debug(`Compared Results: ${comparedMetrics}`);
+    const markdownResult = (0, markdown_service_1.formatReportComparisonAsMarkdown)({
+        comparedMetrics,
+        inputPath: inputs.linksFilePath
+    });
+    debug('Printing markdown result and compared metrics...');
+    /* istanbul ignore next */
+    debug(`Markdown Result: \n${markdownResult}`);
+    return { markdownResult, comparedMetrics };
+};
+exports.executeRun = executeRun;
 
 
 /***/ }),

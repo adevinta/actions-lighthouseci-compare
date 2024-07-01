@@ -125,11 +125,15 @@ describe('action', () => {
     expect(errorMock).not.toHaveBeenCalled()
   })
 
-  it('sets a failed status', async () => {
+  it('sets a failed status if inputs are empty', async () => {
     // Set the action's inputs as return values from core.getInput()
     // getBuildsMock.mockRejectedValue(
     //   new Error(`[api-service][ERROR]: Could not get builds from LHCI API`)
     // )
+    // all inputs are empty
+    getInputMock.mockImplementation(() => {
+      return ''
+    })
 
     await main.run()
     expect(runMock).toHaveReturned()

@@ -30,8 +30,12 @@ inputs:
 
 # Define your outputs here.
 outputs:
-  time:
-    description: 'Your output description here'
+  markdown:
+    description: 'The markdown table with the results'
+  comparedMetrics:
+    description:
+      'An object with the results, in case you want to use it for something
+      else.'
 
 runs:
   using: node20
