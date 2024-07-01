@@ -31,7 +31,7 @@ export async function run(): Promise<void> {
     }
     const { markdownResult, comparedMetrics } = await executeRun({
       inputs,
-      core
+      debug: core.debug
     })
     /* istanbul ignore next */
     core.setOutput('markdown', markdownResult)
@@ -45,38 +45,36 @@ export async function run(): Promise<void> {
 
 export const executeRun = async ({
   inputs,
-  core
+  debug
 }: {
   inputs: InputsInterface
-  core: {
-    debug: any
-  }
+  debug: any
 }) => {
-  core.debug('Running action and printing inputs...')
-  core.debug(`Inputs: ${JSON.stringify(inputs, null, 2)}`)
+  debug('Running action and printing inputs...')
+  debug(`Inputs: ${JSON.stringify(inputs, null, 2)}`)
   const { build, ancestorBuild } = await getBuilds(inputs)
-  core.debug('Printing build and ancestor build...')
-  core.debug(`Build: ${JSON.stringify(build, null, 2)}`)
-  core.debug(`Ancestor Build: ${JSON.stringify(ancestorBuild, null, 2)}`)
+  debug('Printing build and ancestor build...')
+  debug(`Build: ${JSON.stringify(build, null, 2)}`)
+  debug(`Ancestor Build: ${JSON.stringify(ancestorBuild, null, 2)}`)
   const { runs, ancestorRuns } = await getLighthouseCIRuns({
     baseUrl: inputs.baseUrl,
     projectId: inputs.projectId,
     buildId: build.id,
     ancestorBuildId: ancestorBuild.id
   })
-  core.debug('Printing runs and ancestor runs...')
-  core.debug(`Run: ${runs}}`)
-  core.debug(`Ancestor Run: ${ancestorRuns}`)
+  debug('Printing runs and ancestor runs...')
+  debug(`Run: ${runs}}`)
+  debug(`Ancestor Run: ${ancestorRuns}`)
   const comparedMetrics = compareLHRs({ runs, ancestorRuns })
-  core.debug('Printing compared metrics...')
-  core.debug(`Compared Results: ${comparedMetrics}`)
+  debug('Printing compared metrics...')
+  debug(`Compared Results: ${comparedMetrics}`)
   const markdownResult = formatReportComparisonAsMarkdown({
     comparedMetrics,
     inputPath: inputs.linksFilePath
   })
-  core.debug('Printing markdown result and compared metrics...')
+  debug('Printing markdown result and compared metrics...')
   /* istanbul ignore next */
-  core.debug(`Markdown Result: \n${markdownResult}`)
+  debug(`Markdown Result: \n${markdownResult}`)
 
   return { markdownResult, comparedMetrics }
 }

@@ -9,4 +9,4 @@ const inputs: InputsInterface = {
   currentCommitSha: '59e778936f40d70edb2af15d61fdeb5cae661649'
 }
 
-executeRun({ inputs, core: { debug: console.log } })
+executeRun({ inputs, debug: console.log })
