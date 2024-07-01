@@ -39,6 +39,9 @@ app.get('/v1/projects/:projectId/builds/:buildId/runs', (req, res) => {
     res.status(404).send('Runs not found')
   }
 })
+app.get('/v1/', (req, res) => {
+  res.send('Lighthouse CI API')
+})
 
 app.listen(port, () => {
   console.log(`Mock Lighthouse CI server listening at http://localhost:${port}`)
