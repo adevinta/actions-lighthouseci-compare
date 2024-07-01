@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unresolved
 import Result from 'lighthouse/types/lhr/lhr'
 export interface InputsInterface {
   linksFilePath: string

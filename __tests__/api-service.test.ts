@@ -1,5 +1,5 @@
 import { getBuilds, getLighthouseCIRuns } from '../src/api-service'
-import { InputsInterface } from '../src/types'
+import { InputsInterface } from '../src/types.d'
 import {
   currentBuildFixture,
   ancestorBuildFixture,

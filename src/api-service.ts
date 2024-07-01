@@ -1,4 +1,4 @@
-import { BuildInterface, InputsInterface } from './types'
+import { BuildInterface, InputsInterface, RunInterface } from './types.d'
 
 export const getBuilds = async ({
   baseUrl,
@@ -8,9 +8,9 @@ export const getBuilds = async ({
   build: BuildInterface
   ancestorBuild: BuildInterface
 }> => {
-  const PROJECT_URL = baseUrl + '/projects/' + projectId
+  const PROJECT_URL = `${baseUrl}/projects/${projectId}`
   const CURRENT_COMMIT_SHA = currentCommitSha
-  const BUILD_LIST_URL = PROJECT_URL + '/builds?limit=20'
+  const BUILD_LIST_URL = `${PROJECT_URL}/builds?limit=20`
 
   const buildListResponse = await fetch(BUILD_LIST_URL)
   if (!buildListResponse.ok) {
@@ -20,7 +20,7 @@ export const getBuilds = async ({
 
   // find the build that matches the commit hash
   const build: BuildInterface = builds.filter(
-    build => build.hash === CURRENT_COMMIT_SHA
+    currentBuild => currentBuild.hash === CURRENT_COMMIT_SHA
   )[0]
   if (!build?.id) {
     throw new Error(
@@ -55,8 +55,8 @@ export const getLighthouseCIRuns = async ({
   projectId: string
   buildId: string
   ancestorBuildId: string
-}) => {
-  const PROJECT_URL = baseUrl + '/projects/' + projectId
+}): Promise<{ runs: RunInterface[]; ancestorRuns: RunInterface[] }> => {
+  const PROJECT_URL = `${baseUrl}/projects/${projectId}`
   const [runResponse, ancestorRunResponse] = await Promise.all([
     fetch(`${PROJECT_URL}/builds/${buildId}/runs?representative=true`),
     fetch(`${PROJECT_URL}/builds/${ancestorBuildId}/runs?representative=true`)
@@ -66,8 +66,8 @@ export const getLighthouseCIRuns = async ({
   }
 
   const [runs, ancestorRuns] = await Promise.all([
-    runResponse.json(),
-    ancestorRunResponse.json()
+    runResponse.json() as unknown as RunInterface[],
+    ancestorRunResponse.json() as unknown as RunInterface[]
   ])
   return { runs, ancestorRuns }
 }

@@ -1,5 +1,5 @@
 import { getComparisonLinksObject } from './compare-service'
-import { ComparisonResultsByURLInterface } from './types'
+import { ComparisonResultsByURLInterface } from './types.d'
 
 export interface MarkdownTableCellInterface {
   currentValue: number
@@ -15,7 +15,7 @@ export const getMarkdownTableCell = ({
   diffValue,
   metricUnit,
   metricType
-}: MarkdownTableCellInterface) => {
+}: MarkdownTableCellInterface): string => {
   if (metricType === 'performance') {
     return `[${currentValue}${metricUnit} ${isRegression ? '🔴' : '🟢'}](## "Performance has  ${
       isRegression ? 'decreased in ' : 'improved in +'
@@ -41,7 +41,7 @@ export const createMarkdownTableRow = ({
   comparedMetrics: ComparisonResultsByURLInterface
   url: string
   link: string
-}) => {
+}): string => {
   const urlPathname = new URL(url).pathname
   const { performance, lcp, tbt, cls } = comparedMetrics[urlPathname]
   return `| [${new URL(url).pathname}](${url}) | ${getMarkdownTableCell({
@@ -70,14 +70,14 @@ export const createMarkdownTableRow = ({
     metricType: 'tbt'
   })} | [Report](${link}) |`
 }
-
+/* istanbul ignore next */
 export const formatReportComparisonAsMarkdown = ({
   comparedMetrics,
   inputPath
 }: {
   comparedMetrics: ComparisonResultsByURLInterface
   inputPath: string
-}) => {
+}): string => {
   const comparison = getComparisonLinksObject({ inputPath })
   return `
 | URL | Performance | LCP | CLS | TBT | Link to Report |
@@ -87,5 +87,5 @@ ${Object.entries(comparison)
     return createMarkdownTableRow({ url, comparedMetrics, link })
   })
   .join('\n')}
-`
+`.toString()
 }

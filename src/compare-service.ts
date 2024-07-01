@@ -1,8 +1,11 @@
-import { ComparisonResultsInterface, RunInterface } from './types'
-// @ts-ignore
+import { ComparisonResultsInterface, RunInterface } from './types.d'
+// @ts-expect-error type is inferred from a js file, which causes problems
 import type Result from 'lighthouse/types/lhr/lhr'
-// @ts-ignore
-import { Result as AuditResult } from 'lighthouse/types/lhr/audit-result'
+// @ts-expect-error type is inferred from a js file, which causes problems
+import type { Result as AuditResult } from 'lighthouse/types/lhr/audit-result'
+import fs from 'fs'
+import path from 'path'
+
 export const compareLHRs = ({
   runs,
   ancestorRuns
@@ -31,10 +34,10 @@ export const compareLHRs = ({
   const buildLHRObject: {
     [key: string]: ComparisonResultsInterface
   } = {}
-  buildLHR.forEach(run => {
+  for (const run of buildLHR) {
     // find the ancestor run that matches the current run URL
     const ancestorRun = ancestorBuildLHR.filter(
-      ancestorRun => ancestorRun.url === run.url
+      currentAncestorRun => currentAncestorRun.url === run.url
     )[0]
     if (typeof run.lhr !== 'string' || typeof ancestorRun.lhr !== 'string') {
       const runLHR: Result = run.lhr as Result
@@ -123,14 +126,15 @@ export const compareLHRs = ({
         }
       }
     }
-  })
+  }
   return buildLHRObject
 }
 
-export const readFileAsJson = ({ filepath }: { filepath: string }) => {
-  const fs = require('fs')
-  const path = require('path')
-
+export const readFileAsJson = ({
+  filepath
+}: {
+  filepath: string
+}): { [key: string]: string } => {
   return JSON.parse(fs.readFileSync(path.resolve(__dirname, filepath), 'utf-8'))
 }
 

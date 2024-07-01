@@ -1,13 +1,8 @@
 import {
   createMarkdownTableRow,
-  formatReportComparisonAsMarkdown,
   getMarkdownTableCell
 } from '../src/markdown-service'
-import {
-  linksJsonFixture,
-  comparedResultFixture
-} from './compare-service.fixtures'
-import fs from 'fs'
+import { comparedResultFixture } from './compare-service.fixtures'
 
 describe('markdown-service', () => {
   beforeEach(() => {
