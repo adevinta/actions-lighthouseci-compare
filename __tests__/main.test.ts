@@ -121,15 +121,23 @@ describe('action', () => {
       12,
       expect.stringMatching(/Markdown Result/)
     )
-    expect(setOutputMock).toHaveBeenCalledTimes(2)
+    expect(setOutputMock).toHaveBeenCalledTimes(4)
+    expect(setOutputMock).toHaveBeenNthCalledWith(
+      1,
+      'markdown',
+      expect.any(String)
+    )
+    expect(setOutputMock).toHaveBeenNthCalledWith(
+      2,
+      'comparedMetrics',
+      expect.any(Object)
+    )
+    expect(setOutputMock).toHaveBeenNthCalledWith(3, 'status', 'success')
+    expect(setOutputMock).toHaveBeenNthCalledWith(4, 'failReason', '')
     expect(errorMock).not.toHaveBeenCalled()
   })
 
-  it('sets a failed status if inputs are empty', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    // getBuildsMock.mockRejectedValue(
-    //   new Error(`[api-service][ERROR]: Could not get builds from LHCI API`)
-    // )
+  it('should set the status output to "failure" if inputs are empty but not fail', async () => {
     // all inputs are empty
     getInputMock.mockImplementation(() => {
       return ''
@@ -139,10 +147,33 @@ describe('action', () => {
     expect(runMock).toHaveReturned()
 
     // Verify that all of the core library functions were called correctly
-    expect(setFailedMock).toHaveBeenNthCalledWith(
-      1,
+    expect(setOutputMock).toHaveBeenCalledTimes(2)
+    expect(setOutputMock).toHaveBeenNthCalledWith(1, 'status', 'failure')
+    expect(setOutputMock).toHaveBeenNthCalledWith(
+      2,
+      'failReason',
       '[main][ERROR]Missing required inputs. Please check the action configuration.'
     )
     expect(errorMock).not.toHaveBeenCalled()
+    expect(setFailedMock).not.toHaveBeenCalled()
+  })
+  it('should set failure status if shouldFailBuild is true', async () => {
+    getInputMock.mockImplementation(name => {
+      if (name === 'should-fail-build') {
+        return 'true'
+      }
+      return ''
+    })
+    await main.run()
+    expect(runMock).toHaveReturned()
+    expect(setOutputMock).toHaveBeenCalledTimes(2)
+    expect(setOutputMock).toHaveBeenNthCalledWith(1, 'status', 'failure')
+    expect(setOutputMock).toHaveBeenNthCalledWith(
+      2,
+      'failReason',
+      '[main][ERROR]Missing required inputs. Please check the action configuration.'
+    )
+    expect(errorMock).not.toHaveBeenCalled()
+    expect(setFailedMock).toHaveBeenCalled()
   })
 })

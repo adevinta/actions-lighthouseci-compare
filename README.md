@@ -31,6 +31,7 @@ request.
     base-url: 'https://your-lhci-server.com/v1'
     project-id: 'your-project-id'
     current-commit-sha: ${{ github.sha }}
+    should-build-fail: true
 ```
 
 ## Inputs
@@ -57,6 +58,12 @@ request.
 
 - **Description**: The current commit SHA.
 - **Required**: Yes
+
+### `should-fail-build`
+
+- **Description**: If the action should fail if it crashes.
+- **Required**: No
+- **Default**: `false`
 
 ## Outputs
 
@@ -103,3 +110,31 @@ The object looks like the following:
 ```
 
 Which includes the URL as the key and the metrics as the value.
+
+### `status`
+
+Tells if the action has failed or not. We are handling this output because there
+are reasons why this could fail and you might not want to continue the build
+anyway.
+
+You can also use the directive `continue-on-error` in your workflow to continue
+even if this fails, but with this we provide you a way to know if the action has
+failed too.
+
+See the FAQ section for more information.
+
+### `failureReason`
+
+This is the reason why the action has failed. Is a print of the error message.
+
+## FAQ
+
+My build is failing, what can I do?
+
+Known reasons for failure:
+
+- Build doesn't have an ancestor. This might happen if you don't have properly
+  configured the `LHCI_BUILD_CONTEXT__ANCESTOR_HASH` in your `lhci autorun`.
+- The links.json file is not found. This can happen if you are re-running this
+  action manually. If you re-run a job and is the same commit of a previous run,
+  lighthouse ci will not generate the links.json file again.

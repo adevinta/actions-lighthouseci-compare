@@ -23,7 +23,8 @@ describe('api-service', () => {
     projectId: PROJECT_ID,
     baseUrl: BASE_URL,
     currentCommitSha: CURRENT_COMMIT_SHA,
-    linksFilePath: '.lighthouseci/links.json'
+    linksFilePath: '.lighthouseci/links.json',
+    shouldFailBuild: false
   }
 
   it('should get builds', async () => {

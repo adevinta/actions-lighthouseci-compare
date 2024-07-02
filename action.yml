@@ -27,6 +27,10 @@ inputs:
   current-commit-sha:
     description: 'The current commit SHA.'
     required: true
+  should-fail-build:
+    description:
+      'Tells the action if it should fail in case of any error or not.'
+    default: 'false'
 
 # Define your outputs here.
 outputs:
@@ -36,6 +40,12 @@ outputs:
     description:
       'An object with the results, in case you want to use it for something
       else.'
+  status:
+    description:
+      'Set to "success" if the action ran successfully or "failure" if any of
+      the queries or the markdown generation failed.'
+  failReason:
+    description: 'The reason why the action failed, if it did.'
 
 runs:
   using: node20

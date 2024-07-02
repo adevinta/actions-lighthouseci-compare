@@ -9,16 +9,14 @@ import path from 'path'
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 export async function run(): Promise<void> {
+  const inputs: InputsInterface = {
+    linksFilePath: path.resolve(process.cwd(), core.getInput('links-filepath')), // Resolve path
+    baseUrl: core.getInput('base-url'),
+    projectId: core.getInput('project-id'),
+    currentCommitSha: core.getInput('current-commit-sha'),
+    shouldFailBuild: core.getInput('should-fail-build') === 'true'
+  }
   try {
-    const inputs: InputsInterface = {
-      linksFilePath: path.resolve(
-        process.cwd(),
-        core.getInput('links-filepath')
-      ), // Resolve path
-      baseUrl: core.getInput('base-url'),
-      projectId: core.getInput('project-id'),
-      currentCommitSha: core.getInput('current-commit-sha')
-    }
     if (
       !inputs.linksFilePath ||
       !inputs.baseUrl ||
@@ -37,9 +35,15 @@ export async function run(): Promise<void> {
     core.setOutput('markdown', markdownResult)
     /* istanbul ignore next */
     core.setOutput('comparedMetrics', comparedMetrics)
+    core.setOutput('status', 'success')
+    core.setOutput('failReason', '')
   } catch (error) {
-    // Fail the workflow run if an error occurs
-    if (error instanceof Error) core.setFailed(error.message)
+    core.setOutput('status', 'failure')
+    if (error instanceof Error) core.setOutput('failReason', error.message)
+    if (inputs.shouldFailBuild) {
+      // Fail the workflow run if an error occurs
+      if (error instanceof Error) core.setFailed(error.message)
+    }
   }
 }
 
