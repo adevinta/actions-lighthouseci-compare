@@ -16,20 +16,22 @@ export const getMarkdownTableCell = ({
   metricUnit,
   metricType
 }: MarkdownTableCellInterface): string => {
-  if (metricType === 'performance') {
-    return `[${currentValue}${metricUnit} ${isRegression ? '🔴' : '🟢'}](## "Performance has  ${
-      isRegression ? 'decreased in ' : 'improved in +'
-    }${diffValue} points")`
-  } else if (metricType === 'lcp' || metricType === 'tbt') {
-    return `[${currentValue} ms ${isRegression ? '🔴' : '🟢'}](## "The ${metricType} has ${
-      isRegression ? 'increased in +' : 'decreased in '
-    }${diffValue} ms")`
-  } else if (metricType === 'cls') {
-    return `[${currentValue} ${isRegression ? '🔴' : '🟢'}](## "The CLS has ${
-      isRegression ? 'increased in +' : 'decreased in'
-    } ${diffValue}")`
-  } else {
-    return ''
+  switch (metricType) {
+    case 'performance':
+      return `[${currentValue}${metricUnit} ${isRegression ? '🔴' : '🟢'}](## "Performance has ${
+        isRegression ? 'decreased in ' : 'improved in +'
+      }${diffValue} points")`
+    case 'lcp':
+    case 'tbt':
+      return `[${currentValue} ms ${isRegression ? '🔴' : '🟢'}](## "The ${metricType} has ${
+        isRegression ? 'increased in +' : 'decreased in '
+      }${diffValue} ms")`
+    case 'cls':
+      return `[${currentValue} ${isRegression ? '🔴' : '🟢'}](## "The CLS has ${
+        isRegression ? 'increased in +' : 'decreased in'
+      } ${diffValue}")`
+    default:
+      return ''
   }
 }
 
