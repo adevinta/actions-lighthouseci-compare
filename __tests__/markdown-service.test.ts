@@ -65,7 +65,7 @@ describe('markdown-service', () => {
       metricType: 'performance'
     })
     expect(cell).toEqual(
-      '[80/100 🟢](## "Performance has  improved in +1 points")'
+      '[80/100 🟢](## "Performance has improved in +1 points")'
     )
   })
   it('should get markdown table cell for performance regressing', () => {
@@ -78,7 +78,7 @@ describe('markdown-service', () => {
       metricType: 'performance'
     })
     expect(cell).toEqual(
-      '[70/100 🔴](## "Performance has  decreased in 20 points")'
+      '[70/100 🔴](## "Performance has decreased in 20 points")'
     )
   })
   it('should get markdown table cell for tbt improving', () => {
@@ -121,7 +121,7 @@ describe('markdown-service', () => {
       link: 'https://example.com/report'
     })
     expect(row).toBe(
-      '| [/](https://example.com/) | [72/100 🟢](## "Performance has  improved in +0 points") | [1338 ms 🔴](## "The lcp has increased in +110 ms") | [0.059 🟢](## "The CLS has decreased in 0") | [1747 ms 🟢](## "The tbt has decreased in -42 ms") | [Report](https://example.com/report) |'
+      '| [/](https://example.com/) | [72/100 🟢](## "Performance has improved in +0 points") | [1338 ms 🔴](## "The lcp has increased in +110 ms") | [0.059 🟢](## "The CLS has decreased in 0") | [1747 ms 🟢](## "The tbt has decreased in -42 ms") | [Report](https://example.com/report) |'
     )
   })
   it('should create a different markdown table row with a different url', () => {
@@ -131,7 +131,7 @@ describe('markdown-service', () => {
       link: 'https://example.com/_maison_jardin_/offres/report'
     })
     expect(row).toBe(
-      '| [/_maison_jardin_/offres](https://example.com/_maison_jardin_/offres) | [68/100 🔴](## "Performance has  decreased in -3 points") | [2045 ms 🔴](## "The lcp has increased in +532 ms") | [0.048 🟢](## "The CLS has decreased in 0") | [2518 ms 🔴](## "The tbt has increased in +258 ms") | [Report](https://example.com/_maison_jardin_/offres/report) |'
+      '| [/_maison_jardin_/offres](https://example.com/_maison_jardin_/offres) | [68/100 🔴](## "Performance has decreased in -3 points") | [2045 ms 🔴](## "The lcp has increased in +532 ms") | [0.048 🟢](## "The CLS has decreased in 0") | [2518 ms 🔴](## "The tbt has increased in +258 ms") | [Report](https://example.com/_maison_jardin_/offres/report) |'
     )
   })
   /**

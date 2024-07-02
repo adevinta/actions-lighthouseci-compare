@@ -25123,13 +25123,14 @@ const path_1 = __importDefault(__nccwpck_require__(1017));
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 async function run() {
+    const inputs = {
+        linksFilePath: path_1.default.resolve(process.cwd(), core.getInput('links-filepath')), // Resolve path
+        baseUrl: core.getInput('base-url'),
+        projectId: core.getInput('project-id'),
+        currentCommitSha: core.getInput('current-commit-sha'),
+        shouldFailBuild: core.getInput('should-fail-build') === 'true'
+    };
     try {
-        const inputs = {
-            linksFilePath: path_1.default.resolve(process.cwd(), core.getInput('links-filepath')), // Resolve path
-            baseUrl: core.getInput('base-url'),
-            projectId: core.getInput('project-id'),
-            currentCommitSha: core.getInput('current-commit-sha')
-        };
         if (!inputs.linksFilePath ||
             !inputs.baseUrl ||
             !inputs.projectId ||
@@ -25144,11 +25145,18 @@ async function run() {
         core.setOutput('markdown', markdownResult);
         /* istanbul ignore next */
         core.setOutput('comparedMetrics', comparedMetrics);
+        core.setOutput('status', 'success');
+        core.setOutput('failReason', '');
     }
     catch (error) {
-        // Fail the workflow run if an error occurs
+        core.setOutput('status', 'failure');
         if (error instanceof Error)
-            core.setFailed(error.message);
+            core.setOutput('failReason', error.message);
+        if (inputs.shouldFailBuild) {
+            // Fail the workflow run if an error occurs
+            if (error instanceof Error)
+                core.setFailed(error.message);
+        }
     }
 }
 const executeRun = async ({ inputs, debug }) => {
@@ -25193,17 +25201,16 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.formatReportComparisonAsMarkdown = exports.createMarkdownTableRow = exports.getMarkdownTableCell = void 0;
 const compare_service_1 = __nccwpck_require__(355);
 const getMarkdownTableCell = ({ currentValue, isRegression, diffValue, metricUnit, metricType }) => {
-    if (metricType === 'performance') {
-        return `[${currentValue}${metricUnit} ${isRegression ? '🔴' : '🟢'}](## "Performance has  ${isRegression ? 'decreased in ' : 'improved in +'}${diffValue} points")`;
-    }
-    else if (metricType === 'lcp' || metricType === 'tbt') {
-        return `[${currentValue} ms ${isRegression ? '🔴' : '🟢'}](## "The ${metricType} has ${isRegression ? 'increased in +' : 'decreased in '}${diffValue} ms")`;
-    }
-    else if (metricType === 'cls') {
-        return `[${currentValue} ${isRegression ? '🔴' : '🟢'}](## "The CLS has ${isRegression ? 'increased in +' : 'decreased in'} ${diffValue}")`;
-    }
-    else {
-        return '';
+    switch (metricType) {
+        case 'performance':
+            return `[${currentValue}${metricUnit} ${isRegression ? '🔴' : '🟢'}](## "Performance has ${isRegression ? 'decreased in ' : 'improved in +'}${diffValue} points")`;
+        case 'lcp':
+        case 'tbt':
+            return `[${currentValue} ms ${isRegression ? '🔴' : '🟢'}](## "The ${metricType} has ${isRegression ? 'increased in +' : 'decreased in '}${diffValue} ms")`;
+        case 'cls':
+            return `[${currentValue} ${isRegression ? '🔴' : '🟢'}](## "The CLS has ${isRegression ? 'increased in +' : 'decreased in'} ${diffValue}")`;
+        default:
+            return '';
     }
 };
 exports.getMarkdownTableCell = getMarkdownTableCell;
