@@ -1,8 +1,13 @@
 import {
   createMarkdownTableRow,
+  formatReportComparisonAsMarkdown,
   getMarkdownTableCell
 } from '../src/markdown-service'
-import { comparedResultFixture } from './compare-service.fixtures'
+import {
+  comparedResultFixture,
+  linksJsonFixture
+} from './compare-service.fixtures'
+import fs from 'fs'
 
 describe('markdown-service', () => {
   beforeEach(() => {
@@ -134,25 +139,22 @@ describe('markdown-service', () => {
       '| [/_maison_jardin_/offres](https://example.com/_maison_jardin_/offres) | [68/100 🔴](## "Performance has decreased in -3 points") | [2045 ms 🔴](## "The lcp has increased in +532 ms") | [0.048 🟢](## "The CLS has decreased in 0") | [2518 ms 🔴](## "The tbt has increased in +258 ms") | [Report](https://example.com/_maison_jardin_/offres/report) |'
     )
   })
-  /**
-   * There is a problem with the test below. NodeJS crashes when treating with multi line strings.
-   * Test passes but then the v8 engine crashes when trying to run the coverage step.
-   */
-  // it('should print the entire markdown table', () => {
-  //   fs.readFileSync = jest
-  //     .fn()
-  //     .mockReturnValue(JSON.stringify(linksJsonFixture))
-  //   // Test the formatReportComparisonAsMarkdown function
 
-  //   const markdown = formatReportComparisonAsMarkdown({
-  //     comparedMetrics: comparedResultFixture,
-  //     inputPath: 'test'
-  //   })
-  //   expect(markdown).toContain(
-  //     '| URL | Performance | LCP | CLS | TBT | Link to Report |'
-  //   )
-  //   expect(markdown).toContain(
-  //     '|:--- |:-----------:| ---:| ---:| ---:|:-------------- |'
-  //   )
-  // })
+  it('should print the entire markdown table', () => {
+    fs.readFileSync = jest
+      .fn()
+      .mockReturnValue(JSON.stringify(linksJsonFixture))
+    // Test the formatReportComparisonAsMarkdown function
+
+    const markdown = formatReportComparisonAsMarkdown({
+      comparedMetrics: comparedResultFixture,
+      inputPath: 'test'
+    })
+    expect(markdown).toContain(
+      '| URL | Performance | LCP | CLS | TBT | Link to Report |'
+    )
+    expect(markdown).toContain(
+      '|:--- |:-----------:| ---:| ---:| ---:|:-------------- |'
+    )
+  })
 })
