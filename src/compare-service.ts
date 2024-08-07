@@ -1,7 +1,9 @@
 import { ComparisonResultsInterface, RunInterface } from './types.d'
-// @ts-expect-error type is inferred from a js file, which causes problems
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import type Result from 'lighthouse/types/lhr/lhr'
-// @ts-expect-error type is inferred from a js file, which causes problems
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import type { Result as AuditResult } from 'lighthouse/types/lhr/audit-result'
 import fs from 'fs'
 import path from 'path'
@@ -52,12 +54,9 @@ export const compareLHRs = ({
         (ancestorPerformance.score ? ancestorPerformance.score : 0) * 100
       const diffPerformance = currentPerformance - previousPerformance
       const isPerformanceRegression = diffPerformance < 0
-      const lcp: AuditResult = runLHR.audits[
-        'largest-contentful-paint'
-      ] as AuditResult
-      const ancestorLCP: AuditResult = ancestorRunLHR.audits[
-        'largest-contentful-paint'
-      ] as AuditResult
+      const lcp: AuditResult = runLHR.audits['largest-contentful-paint']
+      const ancestorLCP: AuditResult =
+        ancestorRunLHR.audits['largest-contentful-paint']
       const currentLCP = parseFloat(
         (lcp.numericValue ? lcp.numericValue : 0).toFixed(0)
       )
@@ -67,12 +66,9 @@ export const compareLHRs = ({
       const diffLCP = currentLCP - previousLCP
       const isLCPRegression = diffLCP > 0
 
-      const tbt: AuditResult = runLHR.audits[
-        'total-blocking-time'
-      ] as AuditResult
-      const ancestorTBT: AuditResult = ancestorRunLHR.audits[
-        'total-blocking-time'
-      ] as AuditResult
+      const tbt: AuditResult = runLHR.audits['total-blocking-time']
+      const ancestorTBT: AuditResult =
+        ancestorRunLHR.audits['total-blocking-time']
       const currentTBT = parseFloat(
         (tbt.numericValue ? tbt.numericValue : 0).toFixed(0)
       )
@@ -82,12 +78,9 @@ export const compareLHRs = ({
       const diffTBT = currentTBT - previousTBT
       const isTBTRegression = diffTBT > 0
 
-      const cls: AuditResult = runLHR.audits[
-        'cumulative-layout-shift'
-      ] as AuditResult
-      const ancestorCLS: AuditResult = ancestorRunLHR.audits[
-        'cumulative-layout-shift'
-      ] as AuditResult
+      const cls: AuditResult = runLHR.audits['cumulative-layout-shift']
+      const ancestorCLS: AuditResult =
+        ancestorRunLHR.audits['cumulative-layout-shift']
       const currentCLS = parseFloat(
         (cls.numericValue ? cls.numericValue : 0).toFixed(3)
       )
