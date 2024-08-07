@@ -37,39 +37,6 @@
     "mock-server": "ts-node __tests__/lighthouseci-server.mock.ts"
   },
   "license": "MIT",
-  "jest": {
-    "preset": "ts-jest",
-    "verbose": true,
-    "clearMocks": true,
-    "testEnvironment": "node",
-    "moduleFileExtensions": [
-      "js",
-      "ts"
-    ],
-    "testMatch": [
-      "**/*.test.ts"
-    ],
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/dist/"
-    ],
-    "transform": {
-      "^.+\\.ts$": "ts-jest"
-    },
-    "coverageReporters": [
-      "json-summary",
-      "text",
-      "lcov"
-    ],
-    "collectCoverage": true,
-    "collectCoverageFrom": [
-      "./src/**"
-    ],
-    "moduleDirectories": [
-      "node_modules",
-      "<rootDir>"
-    ]
-  },
   "dependencies": {
     "@actions/core": "^1.10.1",
     "html-to-text": "^9.0.5",
