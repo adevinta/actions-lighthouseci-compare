@@ -64,6 +64,10 @@
     "collectCoverage": true,
     "collectCoverageFrom": [
       "./src/**"
+    ],
+    "moduleDirectories": [
+      "node_modules",
+      "<rootDir>"
     ]
   },
   "dependencies": {
