@@ -7,6 +7,7 @@ import type Result from 'lighthouse/types/lhr/lhr'
 import type { Result as AuditResult } from 'lighthouse/types/lhr/audit-result'
 import fs from 'fs'
 import path from 'path'
+import * as core from '@actions/core'
 
 export const compareLHRs = ({
   runs,
@@ -31,6 +32,9 @@ export const compareLHRs = ({
     }
     return parsedLHR
   })
+
+  core.debug('BuildLHR:\n', JSON.stringify(buildLHR, null, 2))
+  core.debug('ancestorBuildLHR:\n', JSON.stringify(ancestorBuildLHR, null, 2))
 
   // create object with the url as key
   const buildLHRObject: {
