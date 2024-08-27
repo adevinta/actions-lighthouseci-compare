@@ -33,8 +33,11 @@ export const compareLHRs = ({
     return parsedLHR
   })
 
-  core.debug('BuildLHR:\n', JSON.stringify(buildLHR, null, 2))
-  core.debug('ancestorBuildLHR:\n', JSON.stringify(ancestorBuildLHR, null, 2))
+  core.debug('buildLHR:')
+  core.debug(JSON.stringify(buildLHR, null, 2))
+
+  core.debug('ancestorBuildLHR:')
+  core.debug(JSON.stringify(ancestorBuildLHR, null, 2))
 
   // create object with the url as key
   const buildLHRObject: {
