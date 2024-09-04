@@ -32,9 +32,15 @@ request.
     links-filepath: '.lighthouseci/links.json'
     base-url: 'https://your-lhci-server.com/v1'
     project-id: 'your-project-id'
-    current-commit-sha: ${{ github.sha }}
+    current-commit-sha:
+      ${{ github.event_name == 'pull_request' &&
+      github.event.pull_request.head.sha || github.sha }}
     should-build-fail: true
 ```
+
+> `current-commit-sha`: If you are in a Pull Request, you need the
+> `github.event.pull_request.head.sha` to compare with the commit from which
+> your branch came from, otherwise you can use `github.sha`.
 
 ## Inputs
 
