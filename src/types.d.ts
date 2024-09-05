@@ -5,7 +5,7 @@ export interface InputsInterface {
   baseUrl: string
   projectId: string
   currentCommitSha: string
-  shouldFailBuild: boolean
+  shouldFailBuild?: boolean
 }
 
 export interface BuildInterface {
