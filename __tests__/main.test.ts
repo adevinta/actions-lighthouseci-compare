@@ -81,7 +81,7 @@ describe('action', () => {
 
     await main.run()
     expect(runMock).toHaveReturned()
-    expect(debugMock).toHaveBeenCalledTimes(12)
+    expect(debugMock).toHaveBeenCalledTimes(16)
     expect(debugMock).toHaveBeenNthCalledWith(
       1,
       'Running action and printing inputs...'
@@ -108,17 +108,20 @@ describe('action', () => {
       8,
       expect.stringMatching(/Ancestor Run/)
     )
-    expect(debugMock).toHaveBeenNthCalledWith(9, 'Printing compared metrics...')
     expect(debugMock).toHaveBeenNthCalledWith(
-      10,
+      13,
+      'Printing compared metrics...'
+    )
+    expect(debugMock).toHaveBeenNthCalledWith(
+      14,
       expect.stringMatching(/Compared Results/)
     )
     expect(debugMock).toHaveBeenNthCalledWith(
-      11,
+      15,
       expect.stringMatching(/Printing markdown result and compared metrics.../)
     )
     expect(debugMock).toHaveBeenNthCalledWith(
-      12,
+      16,
       expect.stringMatching(/Markdown Result/)
     )
     expect(setOutputMock).toHaveBeenCalledTimes(4)
