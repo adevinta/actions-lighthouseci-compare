@@ -1,7 +1,9 @@
 import { ComparisonResultsInterface, RunInterface } from './types.d'
-// @ts-expect-error type is inferred from a js file, which causes problems
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import type Result from 'lighthouse/types/lhr/lhr'
-// @ts-expect-error type is inferred from a js file, which causes problems
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import type { Result as AuditResult } from 'lighthouse/types/lhr/audit-result'
 import fs from 'fs'
 import path from 'path'
