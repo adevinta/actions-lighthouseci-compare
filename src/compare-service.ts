@@ -18,27 +18,35 @@ export const compareLHRs = ({
 }): {
   [key: string]: ComparisonResultsInterface
 } => {
-  const buildLHR = runs.map(run => {
+  const parseLHR = (run: RunInterface): RunInterface => {
     const parsedLHR: RunInterface = { ...run }
-    if (typeof run.lhr === 'string') {
-      parsedLHR.lhr = JSON.parse(run.lhr) as Result
+    try {
+      if (typeof run.lhr === 'string') {
+        parsedLHR.lhr = JSON.parse(run.lhr) as Result
+      }
+    } catch (error) {
+      if (core.isDebug()) {
+        core.debug('Error parsing LHR:')
+        core.debug(
+          error instanceof Error ? error.message : JSON.stringify(error)
+        )
+        core.debug('from run:')
+        core.debug(JSON.stringify(run, null, 2))
+      }
+      throw error
     }
     return parsedLHR
-  })
-  const ancestorBuildLHR = ancestorRuns.map(run => {
-    const parsedLHR: RunInterface = { ...run }
-    if (typeof run.lhr === 'string') {
-      parsedLHR.lhr = JSON.parse(run.lhr) as Result
-    }
-    return parsedLHR
-  })
+  }
+  const buildLHR = runs.map(parseLHR)
+  const ancestorBuildLHR = ancestorRuns.map(parseLHR)
 
-  core.debug('buildLHR:')
-  core.debug(JSON.stringify(buildLHR, null, 2))
+  if (core.isDebug()) {
+    core.debug('buildLHR:')
+    core.debug(JSON.stringify(buildLHR, null, 2))
 
-  core.debug('ancestorBuildLHR:')
-  core.debug(JSON.stringify(ancestorBuildLHR, null, 2))
-
+    core.debug('ancestorBuildLHR:')
+    core.debug(JSON.stringify(ancestorBuildLHR, null, 2))
+  }
   // create object with the url as key
   const buildLHRObject: {
     [key: string]: ComparisonResultsInterface

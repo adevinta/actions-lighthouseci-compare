@@ -57,31 +57,41 @@ export const executeRun = async ({
   markdownResult: string
   comparedMetrics: ComparisonResultsByURLInterface
 }> => {
-  debug('Running action and printing inputs...')
-  debug(`Inputs: ${JSON.stringify(inputs, null, 2)}`)
+  if (core.isDebug()) {
+    debug('Running action and printing inputs...')
+    debug(`Inputs: ${JSON.stringify(inputs, null, 2)}`)
+  }
   const { build, ancestorBuild } = await getBuilds(inputs)
-  debug('Printing build and ancestor build...')
-  debug(`Build: ${JSON.stringify(build, null, 2)}`)
-  debug(`Ancestor Build: ${JSON.stringify(ancestorBuild, null, 2)}`)
+  if (core.isDebug()) {
+    debug('Printing build and ancestor build...')
+    debug(`Build: ${JSON.stringify(build, null, 2)}`)
+    debug(`Ancestor Build: ${JSON.stringify(ancestorBuild, null, 2)}`)
+  }
   const { runs, ancestorRuns } = await getLighthouseCIRuns({
     baseUrl: inputs.baseUrl,
     projectId: inputs.projectId,
     buildId: build.id,
     ancestorBuildId: ancestorBuild.id
   })
-  debug('Printing runs and ancestor runs...')
-  debug(`Run: ${runs}}`)
-  debug(`Ancestor Run: ${ancestorRuns}`)
+  if (core.isDebug()) {
+    debug('Printing runs and ancestor runs...')
+    debug(`Run: ${JSON.stringify(runs, null, 2)}`)
+    debug(`Ancestor Run: ${JSON.stringify(ancestorRuns, null, 2)}`)
+  }
   const comparedMetrics = compareLHRs({ runs, ancestorRuns })
-  debug('Printing compared metrics...')
-  debug(`Compared Results: ${comparedMetrics}`)
+  if (core.isDebug()) {
+    debug('Printing compared metrics...')
+    debug(`Compared Results: ${comparedMetrics}`)
+  }
   const markdownResult = formatReportComparisonAsMarkdown({
     comparedMetrics,
     inputPath: inputs.linksFilePath
   })
-  debug('Printing markdown result and compared metrics...')
-  /* istanbul ignore next */
-  debug(`Markdown Result: \n${markdownResult}`)
+  if (core.isDebug()) {
+    debug('Printing markdown result and compared metrics...')
+    /* istanbul ignore next */
+    debug(`Markdown Result: \n${markdownResult}`)
+  }
 
   return { markdownResult, comparedMetrics }
 }
