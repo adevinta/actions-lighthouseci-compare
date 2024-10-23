@@ -37,6 +37,7 @@ describe('action', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
+    jest.spyOn(core, 'isDebug').mockReturnValue(true)
     debugMock = jest.spyOn(core, 'debug').mockImplementation()
     errorMock = jest.spyOn(core, 'error').mockImplementation()
     getInputMock = jest.spyOn(core, 'getInput').mockImplementation()

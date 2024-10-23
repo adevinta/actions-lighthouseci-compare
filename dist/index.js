@@ -25011,24 +25011,32 @@ const fs_1 = __importDefault(__nccwpck_require__(9896));
 const path_1 = __importDefault(__nccwpck_require__(6928));
 const core = __importStar(__nccwpck_require__(7484));
 const compareLHRs = ({ runs, ancestorRuns }) => {
-    const buildLHR = runs.map(run => {
+    const parseLHR = (run) => {
         const parsedLHR = { ...run };
-        if (typeof run.lhr === 'string') {
-            parsedLHR.lhr = JSON.parse(run.lhr);
+        try {
+            if (typeof run.lhr === 'string') {
+                parsedLHR.lhr = JSON.parse(run.lhr);
+            }
+        }
+        catch (error) {
+            if (core.isDebug()) {
+                core.debug('Error parsing LHR:');
+                core.debug(error instanceof Error ? error.message : JSON.stringify(error));
+                core.debug('from run:');
+                core.debug(JSON.stringify(run, null, 2));
+            }
+            throw error;
         }
         return parsedLHR;
-    });
-    const ancestorBuildLHR = ancestorRuns.map(run => {
-        const parsedLHR = { ...run };
-        if (typeof run.lhr === 'string') {
-            parsedLHR.lhr = JSON.parse(run.lhr);
-        }
-        return parsedLHR;
-    });
-    core.debug('buildLHR:');
-    core.debug(JSON.stringify(buildLHR, null, 2));
-    core.debug('ancestorBuildLHR:');
-    core.debug(JSON.stringify(ancestorBuildLHR, null, 2));
+    };
+    const buildLHR = runs.map(parseLHR);
+    const ancestorBuildLHR = ancestorRuns.map(parseLHR);
+    if (core.isDebug()) {
+        core.debug('buildLHR:');
+        core.debug(JSON.stringify(buildLHR, null, 2));
+        core.debug('ancestorBuildLHR:');
+        core.debug(JSON.stringify(ancestorBuildLHR, null, 2));
+    }
     // create object with the url as key
     const buildLHRObject = {};
     for (const run of buildLHR) {
@@ -25188,31 +25196,41 @@ async function run() {
     }
 }
 const executeRun = async ({ inputs, debug }) => {
-    debug('Running action and printing inputs...');
-    debug(`Inputs: ${JSON.stringify(inputs, null, 2)}`);
+    if (core.isDebug()) {
+        debug('Running action and printing inputs...');
+        debug(`Inputs: ${JSON.stringify(inputs, null, 2)}`);
+    }
     const { build, ancestorBuild } = await (0, api_service_1.getBuilds)(inputs);
-    debug('Printing build and ancestor build...');
-    debug(`Build: ${JSON.stringify(build, null, 2)}`);
-    debug(`Ancestor Build: ${JSON.stringify(ancestorBuild, null, 2)}`);
+    if (core.isDebug()) {
+        debug('Printing build and ancestor build...');
+        debug(`Build: ${JSON.stringify(build, null, 2)}`);
+        debug(`Ancestor Build: ${JSON.stringify(ancestorBuild, null, 2)}`);
+    }
     const { runs, ancestorRuns } = await (0, api_service_1.getLighthouseCIRuns)({
         baseUrl: inputs.baseUrl,
         projectId: inputs.projectId,
         buildId: build.id,
         ancestorBuildId: ancestorBuild.id
     });
-    debug('Printing runs and ancestor runs...');
-    debug(`Run: ${runs}}`);
-    debug(`Ancestor Run: ${ancestorRuns}`);
+    if (core.isDebug()) {
+        debug('Printing runs and ancestor runs...');
+        debug(`Run: ${JSON.stringify(runs, null, 2)}`);
+        debug(`Ancestor Run: ${JSON.stringify(ancestorRuns, null, 2)}`);
+    }
     const comparedMetrics = (0, compare_service_1.compareLHRs)({ runs, ancestorRuns });
-    debug('Printing compared metrics...');
-    debug(`Compared Results: ${comparedMetrics}`);
+    if (core.isDebug()) {
+        debug('Printing compared metrics...');
+        debug(`Compared Results: ${comparedMetrics}`);
+    }
     const markdownResult = (0, markdown_service_1.formatReportComparisonAsMarkdown)({
         comparedMetrics,
         inputPath: inputs.linksFilePath
     });
-    debug('Printing markdown result and compared metrics...');
-    /* istanbul ignore next */
-    debug(`Markdown Result: \n${markdownResult}`);
+    if (core.isDebug()) {
+        debug('Printing markdown result and compared metrics...');
+        /* istanbul ignore next */
+        debug(`Markdown Result: \n${markdownResult}`);
+    }
     return { markdownResult, comparedMetrics };
 };
 exports.executeRun = executeRun;
