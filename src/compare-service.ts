@@ -64,10 +64,10 @@ export const compareLHRs = ({
       const ancestorPerformance: Result.Category =
         ancestorRunLHR.categories.performance
       const currentPerformance =
-        (performance.score ? performance.score : 0) * 100
+        ((performance.score ? performance.score : 0) * 100).toFixed(0)
       const previousPerformance =
-        (ancestorPerformance.score ? ancestorPerformance.score : 0) * 100
-      const diffPerformance = currentPerformance - previousPerformance
+        ((ancestorPerformance.score ? ancestorPerformance.score : 0) * 100).toFixed(0)
+      const diffPerformance = (currentPerformance - previousPerformance).toFixed(0)
       const isPerformanceRegression = diffPerformance < 0
       const lcp: AuditResult = runLHR.audits['largest-contentful-paint']
       const ancestorLCP: AuditResult =
