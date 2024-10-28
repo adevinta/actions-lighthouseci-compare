@@ -25754,9 +25754,9 @@ const compareLHRs = ({ runs, ancestorRuns }) => {
             // get the performance score, lcp, tbt and cls of the current run and the ancestor run and compare them
             const performance = runLHR.categories.performance;
             const ancestorPerformance = ancestorRunLHR.categories.performance;
-            const currentPerformance = (performance.score ? performance.score : 0) * 100;
-            const previousPerformance = (ancestorPerformance.score ? ancestorPerformance.score : 0) * 100;
-            const diffPerformance = currentPerformance - previousPerformance;
+            const currentPerformance = parseFloat(((performance.score ? performance.score : 0) * 100).toFixed(0));
+            const previousPerformance = parseFloat(((ancestorPerformance.score ? ancestorPerformance.score : 0) * 100).toFixed(0));
+            const diffPerformance = parseFloat((currentPerformance - previousPerformance).toFixed(0));
             const isPerformanceRegression = diffPerformance < 0;
             const lcp = runLHR.audits['largest-contentful-paint'];
             const ancestorLCP = ancestorRunLHR.audits['largest-contentful-paint'];
