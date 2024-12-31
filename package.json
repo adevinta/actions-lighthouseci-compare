@@ -35,7 +35,7 @@
     "package:watch": "npm run package -- --watch",
     "test": "npx jest",
     "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package",
-    "mock-server": "npx ts-node __tests__/lighthouseci-server.mock.ts"
+    "mock-server": "npx tsx __tests__/lighthouseci-server.mock.ts"
   },
   "license": "MIT",
   "jest": {
