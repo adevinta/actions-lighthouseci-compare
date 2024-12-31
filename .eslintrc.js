@@ -1,41 +1,49 @@
-env:
-  node: true
-  es6: true
-  jest: true
+module.exports = {
+  env: {
+    node: true,
+    es6: true,
+    jest: true
+  },
 
-globals:
-  Atomics: readonly
-  SharedArrayBuffer: readonly
+  globals: {
+    Atomics: 'readonly',
+    SharedArrayBuffer: 'readonly'
+  },
 
-ignorePatterns:
-  - '!.*'
-  - '**/node_modules/.*'
-  - '**/dist/.*'
-  - '**/coverage/.*'
-  - '*.json'
+  ignorePatterns: [
+    '!.*',
+    '**/node_modules/.*',
+    '**/dist/.*',
+    '**/coverage/.*',
+    '*.json',
+    '.eslintrc.js'
+  ],
 
-parser: '@typescript-eslint/parser'
+  parser: '@typescript-eslint/parser',
 
-parserOptions:
-  ecmaVersion: 2023
-  sourceType: module
-  project:
-    - './.github/linters/tsconfig.json'
-    - './tsconfig.json'
+  parserOptions: {
+    ecmaVersion: 2023,
+    sourceType: 'module',
+    project: [
+      './.github/linters/tsconfig.json',
+      './tsconfig.json'
+    ]
+  },
 
-plugins:
-  - jest
-  - '@typescript-eslint'
+  plugins: [
+    'jest',
+    '@typescript-eslint'
+  ],
 
-extends:
-  - eslint:recommended
-  - plugin:@typescript-eslint/eslint-recommended
-  - plugin:@typescript-eslint/recommended
-  - plugin:github/recommended
-  - plugin:jest/recommended
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/eslint-recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:github/recommended',
+    'plugin:jest/recommended'
+  ],
 
-rules:
-  {
+  rules: {
     'camelcase': 'off',
     'eslint-comments/no-use': 'off',
     'eslint-comments/no-unused-disable': 'off',
@@ -50,10 +58,8 @@ rules:
     '@typescript-eslint/await-thenable': 'error',
     '@typescript-eslint/ban-ts-comment': 'error',
     '@typescript-eslint/consistent-type-assertions': 'error',
-    '@typescript-eslint/explicit-member-accessibility':
-      ['error', { 'accessibility': 'no-public' }],
-    '@typescript-eslint/explicit-function-return-type':
-      ['error', { 'allowExpressions': true }],
+    '@typescript-eslint/explicit-member-accessibility': ['error', { accessibility: 'no-public' }],
+    '@typescript-eslint/explicit-function-return-type': ['error', { allowExpressions: true }],
     '@typescript-eslint/no-array-constructor': 'error',
     '@typescript-eslint/no-empty-interface': 'error',
     '@typescript-eslint/no-explicit-any': 'error',
@@ -79,3 +85,4 @@ rules:
     '@typescript-eslint/space-before-function-paren': 'off',
     '@typescript-eslint/unbound-method': 'error'
   }
+};
