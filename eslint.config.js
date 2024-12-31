@@ -1,11 +1,11 @@
-import eslint from '@eslint/js';
-import tseslint from '@typescript-eslint/eslint-plugin';
-import tsParser from '@typescript-eslint/parser';
-import githubPlugin from 'eslint-plugin-github';
-import jestPlugin from 'eslint-plugin-jest';
-import prettierPlugin from 'eslint-plugin-prettier';
-import importPlugin from 'eslint-plugin-import';
-import globals from 'globals';
+import eslint from '@eslint/js'
+import tseslint from '@typescript-eslint/eslint-plugin'
+import tsParser from '@typescript-eslint/parser'
+import githubPlugin from 'eslint-plugin-github'
+import jestPlugin from 'eslint-plugin-jest'
+import prettierPlugin from 'eslint-plugin-prettier'
+import importPlugin from 'eslint-plugin-import'
+import globals from 'globals'
 
 export default [
   eslint.configs.recommended,
@@ -25,10 +25,7 @@ export default [
       parserOptions: {
         ecmaVersion: 2023,
         sourceType: 'module',
-        project: [
-          './.github/linters/tsconfig.json',
-          './tsconfig.json'
-        ]
+        project: ['./.github/linters/tsconfig.json', './tsconfig.json']
       },
       globals: {
         ...globals.node,
@@ -39,10 +36,10 @@ export default [
     },
     plugins: {
       '@typescript-eslint': tseslint,
-      'github': githubPlugin,
-      'jest': jestPlugin,
-      'prettier': prettierPlugin,
-      'import': importPlugin
+      github: githubPlugin,
+      jest: jestPlugin,
+      prettier: prettierPlugin,
+      import: importPlugin
     },
     settings: {
       'import/parsers': {
@@ -51,10 +48,7 @@ export default [
       'import/resolver': {
         typescript: {
           alwaysTryTypes: true,
-          project: [
-            './.github/linters/tsconfig.json',
-            './tsconfig.json'
-          ]
+          project: ['./.github/linters/tsconfig.json', './tsconfig.json']
         }
       }
     },
@@ -70,14 +64,14 @@ export default [
       'import/no-namespace': 'off',
 
       // Other rules
-      'camelcase': 'off',
+      camelcase: 'off',
       'eslint-comments/no-use': 'off',
       'eslint-comments/no-unused-disable': 'off',
       'i18n-text/no-en': 'off',
       'no-console': 'off',
       'no-unused-vars': 'off',
       'prettier/prettier': 'error',
-      'semi': 'off',
+      semi: 'off',
       'no-extra-semi': 'off',
 
       // TypeScript rules
@@ -85,8 +79,14 @@ export default [
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/ban-ts-comment': 'error',
       '@typescript-eslint/consistent-type-assertions': 'error',
-      '@typescript-eslint/explicit-member-accessibility': ['error', { accessibility: 'no-public' }],
-      '@typescript-eslint/explicit-function-return-type': ['error', { allowExpressions: true }],
+      '@typescript-eslint/explicit-member-accessibility': [
+        'error',
+        { accessibility: 'no-public' }
+      ],
+      '@typescript-eslint/explicit-function-return-type': [
+        'error',
+        { allowExpressions: true }
+      ],
       '@typescript-eslint/no-array-constructor': 'error',
       '@typescript-eslint/no-empty-interface': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
@@ -113,4 +113,4 @@ export default [
       '@typescript-eslint/unbound-method': 'error'
     }
   }
-]; 
+]
