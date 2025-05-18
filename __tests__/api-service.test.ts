@@ -27,6 +27,70 @@ describe('api-service', () => {
     shouldFailBuild: false
   }
 
+  const BASIC_AUTH_USERNAME = 'admin'
+  const BASIC_AUTH_PASSWORD = 'password123'
+
+  it('should get builds with valid Basic Auth credentials', async () => {
+    ;(fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => buildListFixture
+    })
+    ;(fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ancestorBuildFixture
+    })
+    const { build, ancestorBuild } = await getBuilds({
+      ...inputs,
+      basicAuthUsername: BASIC_AUTH_USERNAME,
+      basicAuthPassword: BASIC_AUTH_PASSWORD
+    })
+    expect(build).toEqual(currentBuildFixture)
+    expect(ancestorBuild).toEqual(ancestorBuildFixture)
+    expect(fetch).toHaveBeenCalledTimes(2)
+    // Check Authorization header
+    const expectedHeader =
+      'Basic ' +
+      Buffer.from(`${BASIC_AUTH_USERNAME}:${BASIC_AUTH_PASSWORD}`).toString(
+        'base64'
+      )
+    const callArgs = (fetch as jest.Mock).mock.calls[0][1]
+    expect(callArgs.headers.get('Authorization')).toBe(expectedHeader)
+  })
+
+  it('should throw error when Basic Auth credentials are missing and server requires them', async () => {
+    ;(fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      json: async () => ({ message: 'Unauthorized' })
+    })
+    await expect(
+      getBuilds({
+        ...inputs,
+        basicAuthUsername: undefined,
+        basicAuthPassword: undefined
+      })
+    ).rejects.toThrow(
+      '[api-service][ERROR]: Could not get builds from LHCI API'
+    )
+  })
+
+  it('should throw error when Basic Auth credentials are invalid', async () => {
+    ;(fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      json: async () => ({ message: 'Invalid credentials' })
+    })
+    await expect(
+      getBuilds({
+        ...inputs,
+        basicAuthUsername: 'wrong',
+        basicAuthPassword: 'wrong'
+      })
+    ).rejects.toThrow(
+      '[api-service][ERROR]: Could not get builds from LHCI API'
+    )
+  })
+
   it('should get builds', async () => {
     ;(fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
@@ -74,7 +138,9 @@ describe('api-service', () => {
       baseUrl: BASE_URL,
       projectId: PROJECT_ID,
       buildId,
-      ancestorBuildId
+      ancestorBuildId,
+      basicAuthUsername: BASIC_AUTH_USERNAME,
+      basicAuthPassword: BASIC_AUTH_PASSWORD
     })
 
     // Assertions to verify the behavior based on the mocked fetch calls

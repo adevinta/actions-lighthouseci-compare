@@ -3,7 +3,9 @@ import { BuildInterface, InputsInterface, RunInterface } from './types.d'
 export const getBuilds = async ({
   baseUrl,
   projectId,
-  currentCommitSha
+  currentCommitSha,
+  basicAuthUsername,
+  basicAuthPassword
 }: InputsInterface): Promise<{
   build: BuildInterface
   ancestorBuild: BuildInterface
@@ -12,8 +14,13 @@ export const getBuilds = async ({
   const CURRENT_COMMIT_SHA = currentCommitSha
   const BUILD_LIST_URL = `${PROJECT_URL}/builds?limit=20`
 
-  console.log('Build LIst URL \n', BUILD_LIST_URL)
-  const buildListResponse = await fetch(BUILD_LIST_URL)
+  console.log('Build List URL \n', BUILD_LIST_URL)
+  const basicAuthHeaders = new Headers({
+    'Authorization': `Basic ${btoa(`${basicAuthUsername}:${basicAuthPassword}`)}`
+  });
+  const buildListResponse = await fetch(BUILD_LIST_URL, {
+    headers: basicAuthHeaders
+  })
   if (!buildListResponse.ok) {
     throw new Error(`[api-service][ERROR]: Could not get builds from LHCI API`)
   }
@@ -50,17 +57,28 @@ export const getLighthouseCIRuns = async ({
   baseUrl,
   projectId,
   buildId,
-  ancestorBuildId
+  ancestorBuildId,
+  basicAuthUsername,
+  basicAuthPassword
 }: {
   baseUrl: string
   projectId: string
   buildId: string
   ancestorBuildId: string
+  basicAuthUsername: string
+  basicAuthPassword: string
 }): Promise<{ runs: RunInterface[]; ancestorRuns: RunInterface[] }> => {
   const PROJECT_URL = `${baseUrl}/projects/${projectId}`
+  const basicAuthHeaders = new Headers({
+    'Authorization': `Basic ${btoa(`${basicAuthUsername}:${basicAuthPassword}`)}`
+  });
   const [runResponse, ancestorRunResponse] = await Promise.all([
-    fetch(`${PROJECT_URL}/builds/${buildId}/runs?representative=true`),
-    fetch(`${PROJECT_URL}/builds/${ancestorBuildId}/runs?representative=true`)
+    fetch(`${PROJECT_URL}/builds/${buildId}/runs?representative=true`, {
+      headers: basicAuthHeaders
+    }),
+    fetch(`${PROJECT_URL}/builds/${ancestorBuildId}/runs?representative=true`, {
+      headers: basicAuthHeaders
+    })
   ])
   if (!runResponse.ok || !ancestorRunResponse.ok) {
     throw new Error(`[api-service][ERROR]: Could not get runs from LHCI API`)

@@ -71,7 +71,9 @@ export const executeRun = async ({
     baseUrl: inputs.baseUrl,
     projectId: inputs.projectId,
     buildId: build.id,
-    ancestorBuildId: ancestorBuild.id
+    ancestorBuildId: ancestorBuild.id,
+    basicAuthUsername: inputs.basicAuthUsername ?? '',
+    basicAuthPassword: inputs.basicAuthPassword ?? ''
   })
   if (core.isDebug()) {
     debug('Printing runs and ancestor runs...')
