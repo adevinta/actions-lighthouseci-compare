@@ -13,6 +13,8 @@ export async function run(): Promise<void> {
     linksFilePath: path.resolve(process.cwd(), core.getInput('links-filepath')), // Resolve path
     baseUrl: core.getInput('base-url'),
     projectId: core.getInput('project-id'),
+    basicAuthPassword: core.getInput('basic-auth-password'),
+    basicAuthUsername: core.getInput('basic-auth-username'),
     currentCommitSha: core.getInput('current-commit-sha'),
     shouldFailBuild: core.getInput('should-fail-build') === 'true'
   }

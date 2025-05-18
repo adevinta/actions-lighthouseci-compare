@@ -48,11 +48,7 @@ describe('api-service', () => {
     expect(ancestorBuild).toEqual(ancestorBuildFixture)
     expect(fetch).toHaveBeenCalledTimes(2)
     // Check Authorization header
-    const expectedHeader =
-      'Basic ' +
-      Buffer.from(`${BASIC_AUTH_USERNAME}:${BASIC_AUTH_PASSWORD}`).toString(
-        'base64'
-      )
+    const expectedHeader = `Basic ${Buffer.from(`${BASIC_AUTH_USERNAME}:${BASIC_AUTH_PASSWORD}`).toString('base64')}`
     const callArgs = (fetch as jest.Mock).mock.calls[0][1]
     expect(callArgs.headers.get('Authorization')).toBe(expectedHeader)
   })

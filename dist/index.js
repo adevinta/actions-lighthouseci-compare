@@ -25647,6 +25647,7 @@ const getBuilds = async ({ baseUrl, projectId, currentCommitSha, basicAuthUserna
     const BUILD_LIST_URL = `${PROJECT_URL}/builds?limit=20`;
     console.log('Build List URL \n', BUILD_LIST_URL);
     const basicAuthHeaders = new Headers();
+    console.log('Basic Auth', basicAuthUsername);
     if (basicAuthUsername && basicAuthPassword) {
         console.log('Basic Auth detected');
         basicAuthHeaders.append('Authorization', `Basic ${btoa(`${basicAuthUsername}:${basicAuthPassword}`)}`);
@@ -25655,7 +25656,11 @@ const getBuilds = async ({ baseUrl, projectId, currentCommitSha, basicAuthUserna
         headers: basicAuthHeaders
     });
     if (!buildListResponse.ok) {
-        throw new Error(`[api-service][ERROR]: Could not get builds from LHCI API`);
+        let err = '';
+        if (buildListResponse.status && buildListResponse.statusText) {
+            err = ` (${buildListResponse.status}: ${buildListResponse.statusText})`;
+        }
+        throw new Error(`[api-service][ERROR]: Could not get builds from LHCI API${err}`);
     }
     const builds = (await buildListResponse.json());
     // find the build that matches the commit hash
@@ -25666,7 +25671,11 @@ const getBuilds = async ({ baseUrl, projectId, currentCommitSha, basicAuthUserna
     // get the ancestor of the build from the lighthouse-ci API
     const responseAncestor = await fetch(`${PROJECT_URL}/builds/${build.id}/ancestor`);
     if (!responseAncestor.ok) {
-        throw new Error(`[api-service][ERROR]: Could not get ancestor build for build {${build.id}}`);
+        let err = '';
+        if (responseAncestor.status && responseAncestor.statusText) {
+            err = ` (${responseAncestor.status}: ${responseAncestor.statusText})`;
+        }
+        throw new Error(`[api-service][ERROR]: Could not get ancestor build for build {${build.id}}${err}`);
     }
     const ancestorBuild = await responseAncestor.json();
     if (!ancestorBuild?.id) {
@@ -25912,6 +25921,8 @@ async function run() {
         linksFilePath: path_1.default.resolve(process.cwd(), core.getInput('links-filepath')), // Resolve path
         baseUrl: core.getInput('base-url'),
         projectId: core.getInput('project-id'),
+        basicAuthPassword: core.getInput('basic-auth-password'),
+        basicAuthUsername: core.getInput('basic-auth-username'),
         currentCommitSha: core.getInput('current-commit-sha'),
         shouldFailBuild: core.getInput('should-fail-build') === 'true'
     };

@@ -16,16 +16,18 @@ const port = 3000 // You can choose any port that suits your needs
 const USERNAME = 'admin'
 const PASSWORD = 'password123'
 
-const conditionalBasicAuth = (req, res, next) => {
+const conditionalBasicAuth: express.RequestHandler = (req, res, next) => {
   // Check for auth header and skip if not present to simplify the test
   if (!req.headers['authorization']) {
-    return next()
+    next()
+    return
   }
 
   const authHeader = req.headers['authorization']
 
   if (!authHeader || !authHeader.startsWith('Basic ')) {
-    return res.status(401).json({ message: 'Unauthorized' })
+    res.status(401).json({ message: 'Unauthorized' })
+    return
   }
 
   const base64Credentials = authHeader.split(' ')[1]
@@ -33,10 +35,11 @@ const conditionalBasicAuth = (req, res, next) => {
   const [username, password] = credentials.split(':')
 
   if (username === USERNAME && password === PASSWORD) {
-    return next()
+    next()
+    return
   }
 
-  return res.status(401).json({ message: 'Invalid credentials' })
+  res.status(401).json({ message: 'Invalid credentials' })
 }
 
 app.use(express.json())

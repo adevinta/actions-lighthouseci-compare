@@ -37,8 +37,8 @@ request.
       github.event.pull_request.head.sha || github.sha }}
     should-build-fail: true
     # If your custom server is protected with basic auth
-    basicAuthUsername: ${{ secrets.LHCI_USERNAME }}
-    basicAuthPassword: ${{ secrets.LHCI_PASSWORD }}
+    basic-auth-username: ${{ secrets.LHCI_USERNAME }}
+    basic-auth-password: ${{ secrets.LHCI_PASSWORD }}
 ```
 
 > `current-commit-sha`: If you are in a Pull Request, you need the
@@ -76,12 +76,12 @@ request.
 - **Required**: No
 - **Default**: `false`
 
-### `basicAuthUsername`
+### `basic-auth-username`
 
 - **Description**: Basic Auth username
 - **Required**: No
 
-### `basicAuthPassword`
+### `basic-auth-password`
 
 - **Description**: Basic Auth password
 - **Required**: No

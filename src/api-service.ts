@@ -15,6 +15,7 @@ export const getBuilds = async ({
   const BUILD_LIST_URL = `${PROJECT_URL}/builds?limit=20`
 
   console.log('Build List URL \n', BUILD_LIST_URL)
+
   const basicAuthHeaders = new Headers()
   if (basicAuthUsername && basicAuthPassword) {
     console.log('Basic Auth detected')
@@ -27,7 +28,13 @@ export const getBuilds = async ({
     headers: basicAuthHeaders
   })
   if (!buildListResponse.ok) {
-    throw new Error(`[api-service][ERROR]: Could not get builds from LHCI API`)
+    let err = ''
+    if (buildListResponse.status && buildListResponse.statusText) {
+      err = ` (${buildListResponse.status}: ${buildListResponse.statusText})`
+    }
+    throw new Error(
+      `[api-service][ERROR]: Could not get builds from LHCI API${err}`
+    )
   }
   const builds = (await buildListResponse.json()) as BuildInterface[]
 
@@ -45,8 +52,12 @@ export const getBuilds = async ({
     `${PROJECT_URL}/builds/${build.id}/ancestor`
   )
   if (!responseAncestor.ok) {
+    let err = ''
+    if (responseAncestor.status && responseAncestor.statusText) {
+      err = ` (${responseAncestor.status}: ${responseAncestor.statusText})`
+    }
     throw new Error(
-      `[api-service][ERROR]: Could not get ancestor build for build {${build.id}}`
+      `[api-service][ERROR]: Could not get ancestor build for build {${build.id}}${err}`
     )
   }
   const ancestorBuild: BuildInterface = await responseAncestor.json()

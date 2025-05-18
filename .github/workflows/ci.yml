@@ -88,6 +88,8 @@ jobs:
           base-url: 'http://localhost:3000/v1'
           project-id: 'mock-project-id'
           current-commit-sha: '59e778936f40d70edb2af15d61fdeb5cae661649'
+          basic-auth-username: ''
+          basic-auth-password: ''
 
       - name: Print Output
         id: output
