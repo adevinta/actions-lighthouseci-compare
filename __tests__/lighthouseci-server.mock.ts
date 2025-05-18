@@ -16,7 +16,11 @@ const port = 3000 // You can choose any port that suits your needs
 const USERNAME = 'admin'
 const PASSWORD = 'password123'
 
-const conditionalBasicAuth: express.RequestHandler = (req, res, next) => {
+const conditionalBasicAuth: express.RequestHandler = (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
   // Check for auth header and skip if not present to simplify the test
   if (!req.headers['authorization']) {
     next()
