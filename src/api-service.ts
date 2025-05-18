@@ -17,6 +17,7 @@ export const getBuilds = async ({
   console.log('Build List URL \n', BUILD_LIST_URL)
   const basicAuthHeaders = new Headers()
   if (basicAuthUsername && basicAuthPassword) {
+    console.log('Basic Auth detected')
     basicAuthHeaders.append(
       'Authorization',
       `Basic ${btoa(`${basicAuthUsername}:${basicAuthPassword}`)}`

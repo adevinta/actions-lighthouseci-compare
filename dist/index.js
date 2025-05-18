@@ -25641,12 +25641,19 @@ module.exports = {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getLighthouseCIRuns = exports.getBuilds = void 0;
-const getBuilds = async ({ baseUrl, projectId, currentCommitSha }) => {
+const getBuilds = async ({ baseUrl, projectId, currentCommitSha, basicAuthUsername, basicAuthPassword }) => {
     const PROJECT_URL = `${baseUrl}/projects/${projectId}`;
     const CURRENT_COMMIT_SHA = currentCommitSha;
     const BUILD_LIST_URL = `${PROJECT_URL}/builds?limit=20`;
-    console.log('Build LIst URL \n', BUILD_LIST_URL);
-    const buildListResponse = await fetch(BUILD_LIST_URL);
+    console.log('Build List URL \n', BUILD_LIST_URL);
+    const basicAuthHeaders = new Headers();
+    if (basicAuthUsername && basicAuthPassword) {
+        console.log('Basic Auth detected');
+        basicAuthHeaders.append('Authorization', `Basic ${btoa(`${basicAuthUsername}:${basicAuthPassword}`)}`);
+    }
+    const buildListResponse = await fetch(BUILD_LIST_URL, {
+        headers: basicAuthHeaders
+    });
     if (!buildListResponse.ok) {
         throw new Error(`[api-service][ERROR]: Could not get builds from LHCI API`);
     }
@@ -25668,11 +25675,19 @@ const getBuilds = async ({ baseUrl, projectId, currentCommitSha }) => {
     return { build, ancestorBuild };
 };
 exports.getBuilds = getBuilds;
-const getLighthouseCIRuns = async ({ baseUrl, projectId, buildId, ancestorBuildId }) => {
+const getLighthouseCIRuns = async ({ baseUrl, projectId, buildId, ancestorBuildId, basicAuthUsername, basicAuthPassword }) => {
     const PROJECT_URL = `${baseUrl}/projects/${projectId}`;
+    const basicAuthHeaders = new Headers();
+    if (basicAuthUsername && basicAuthPassword) {
+        basicAuthHeaders.append('Authorization', `Basic ${btoa(`${basicAuthUsername}:${basicAuthPassword}`)}`);
+    }
     const [runResponse, ancestorRunResponse] = await Promise.all([
-        fetch(`${PROJECT_URL}/builds/${buildId}/runs?representative=true`),
-        fetch(`${PROJECT_URL}/builds/${ancestorBuildId}/runs?representative=true`)
+        fetch(`${PROJECT_URL}/builds/${buildId}/runs?representative=true`, {
+            headers: basicAuthHeaders
+        }),
+        fetch(`${PROJECT_URL}/builds/${ancestorBuildId}/runs?representative=true`, {
+            headers: basicAuthHeaders
+        })
     ]);
     if (!runResponse.ok || !ancestorRunResponse.ok) {
         throw new Error(`[api-service][ERROR]: Could not get runs from LHCI API`);
@@ -25944,7 +25959,9 @@ const executeRun = async ({ inputs, debug }) => {
         baseUrl: inputs.baseUrl,
         projectId: inputs.projectId,
         buildId: build.id,
-        ancestorBuildId: ancestorBuild.id
+        ancestorBuildId: ancestorBuild.id,
+        basicAuthUsername: inputs.basicAuthUsername ?? '',
+        basicAuthPassword: inputs.basicAuthPassword ?? ''
     });
     if (core.isDebug()) {
         debug('Printing runs and ancestor runs...');
