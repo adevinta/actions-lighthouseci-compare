@@ -25647,7 +25647,6 @@ const getBuilds = async ({ baseUrl, projectId, currentCommitSha, basicAuthUserna
     const BUILD_LIST_URL = `${PROJECT_URL}/builds?limit=20`;
     console.log('Build List URL \n', BUILD_LIST_URL);
     const basicAuthHeaders = new Headers();
-    console.log('Basic Auth', basicAuthUsername);
     if (basicAuthUsername && basicAuthPassword) {
         console.log('Basic Auth detected');
         basicAuthHeaders.append('Authorization', `Basic ${btoa(`${basicAuthUsername}:${basicAuthPassword}`)}`);
