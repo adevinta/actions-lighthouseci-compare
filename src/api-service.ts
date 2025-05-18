@@ -15,9 +15,13 @@ export const getBuilds = async ({
   const BUILD_LIST_URL = `${PROJECT_URL}/builds?limit=20`
 
   console.log('Build List URL \n', BUILD_LIST_URL)
-  const basicAuthHeaders = new Headers({
-    'Authorization': `Basic ${btoa(`${basicAuthUsername}:${basicAuthPassword}`)}`
-  });
+  const basicAuthHeaders = new Headers()
+  if (basicAuthUsername && basicAuthPassword) {
+    basicAuthHeaders.append(
+      'Authorization',
+      `Basic ${btoa(`${basicAuthUsername}:${basicAuthPassword}`)}`
+    )
+  }
   const buildListResponse = await fetch(BUILD_LIST_URL, {
     headers: basicAuthHeaders
   })
@@ -69,9 +73,13 @@ export const getLighthouseCIRuns = async ({
   basicAuthPassword: string
 }): Promise<{ runs: RunInterface[]; ancestorRuns: RunInterface[] }> => {
   const PROJECT_URL = `${baseUrl}/projects/${projectId}`
-  const basicAuthHeaders = new Headers({
-    'Authorization': `Basic ${btoa(`${basicAuthUsername}:${basicAuthPassword}`)}`
-  });
+  const basicAuthHeaders = new Headers()
+  if (basicAuthUsername && basicAuthPassword) {
+    basicAuthHeaders.append(
+      'Authorization',
+      `Basic ${btoa(`${basicAuthUsername}:${basicAuthPassword}`)}`
+    )
+  }
   const [runResponse, ancestorRunResponse] = await Promise.all([
     fetch(`${PROJECT_URL}/builds/${buildId}/runs?representative=true`, {
       headers: basicAuthHeaders
