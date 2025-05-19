@@ -31,6 +31,14 @@ inputs:
     description:
       'Tells the action if it should fail in case of any error or not.'
     default: 'false'
+  basic-auth-username:
+    description:
+      'The username for basic authentication, if your Lighthouse CI server
+      requires it.'
+  basic-auth-password:
+    description:
+      'The password for basic authentication, if your Lighthouse CI server
+      requires it.'
 
 # Define your outputs here.
 outputs:
