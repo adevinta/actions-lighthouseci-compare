@@ -6,6 +6,8 @@ export interface InputsInterface {
   projectId: string
   currentCommitSha: string
   shouldFailBuild?: boolean
+  basicAuthUsername?: string
+  basicAuthPassword?: string
 }
 
 export interface BuildInterface {

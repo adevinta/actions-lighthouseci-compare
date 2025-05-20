@@ -25641,14 +25641,25 @@ module.exports = {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getLighthouseCIRuns = exports.getBuilds = void 0;
-const getBuilds = async ({ baseUrl, projectId, currentCommitSha }) => {
+const getBuilds = async ({ baseUrl, projectId, currentCommitSha, basicAuthUsername, basicAuthPassword }) => {
     const PROJECT_URL = `${baseUrl}/projects/${projectId}`;
     const CURRENT_COMMIT_SHA = currentCommitSha;
     const BUILD_LIST_URL = `${PROJECT_URL}/builds?limit=20`;
-    console.log('Build LIst URL \n', BUILD_LIST_URL);
-    const buildListResponse = await fetch(BUILD_LIST_URL);
+    console.log('Build List URL \n', BUILD_LIST_URL);
+    const basicAuthHeaders = new Headers();
+    if (basicAuthUsername && basicAuthPassword) {
+        console.log('Basic Auth detected');
+        basicAuthHeaders.append('Authorization', `Basic ${btoa(`${basicAuthUsername}:${basicAuthPassword}`)}`);
+    }
+    const buildListResponse = await fetch(BUILD_LIST_URL, {
+        headers: basicAuthHeaders
+    });
     if (!buildListResponse.ok) {
-        throw new Error(`[api-service][ERROR]: Could not get builds from LHCI API`);
+        let err = '';
+        if (buildListResponse.status && buildListResponse.statusText) {
+            err = ` (${buildListResponse.status}: ${buildListResponse.statusText})`;
+        }
+        throw new Error(`[api-service][ERROR]: Could not get builds from LHCI API${err}`);
     }
     const builds = (await buildListResponse.json());
     // find the build that matches the commit hash
@@ -25659,7 +25670,11 @@ const getBuilds = async ({ baseUrl, projectId, currentCommitSha }) => {
     // get the ancestor of the build from the lighthouse-ci API
     const responseAncestor = await fetch(`${PROJECT_URL}/builds/${build.id}/ancestor`);
     if (!responseAncestor.ok) {
-        throw new Error(`[api-service][ERROR]: Could not get ancestor build for build {${build.id}}`);
+        let err = '';
+        if (responseAncestor.status && responseAncestor.statusText) {
+            err = ` (${responseAncestor.status}: ${responseAncestor.statusText})`;
+        }
+        throw new Error(`[api-service][ERROR]: Could not get ancestor build for build {${build.id}}${err}`);
     }
     const ancestorBuild = await responseAncestor.json();
     if (!ancestorBuild?.id) {
@@ -25668,11 +25683,19 @@ const getBuilds = async ({ baseUrl, projectId, currentCommitSha }) => {
     return { build, ancestorBuild };
 };
 exports.getBuilds = getBuilds;
-const getLighthouseCIRuns = async ({ baseUrl, projectId, buildId, ancestorBuildId }) => {
+const getLighthouseCIRuns = async ({ baseUrl, projectId, buildId, ancestorBuildId, basicAuthUsername, basicAuthPassword }) => {
     const PROJECT_URL = `${baseUrl}/projects/${projectId}`;
+    const basicAuthHeaders = new Headers();
+    if (basicAuthUsername && basicAuthPassword) {
+        basicAuthHeaders.append('Authorization', `Basic ${btoa(`${basicAuthUsername}:${basicAuthPassword}`)}`);
+    }
     const [runResponse, ancestorRunResponse] = await Promise.all([
-        fetch(`${PROJECT_URL}/builds/${buildId}/runs?representative=true`),
-        fetch(`${PROJECT_URL}/builds/${ancestorBuildId}/runs?representative=true`)
+        fetch(`${PROJECT_URL}/builds/${buildId}/runs?representative=true`, {
+            headers: basicAuthHeaders
+        }),
+        fetch(`${PROJECT_URL}/builds/${ancestorBuildId}/runs?representative=true`, {
+            headers: basicAuthHeaders
+        })
     ]);
     if (!runResponse.ok || !ancestorRunResponse.ok) {
         throw new Error(`[api-service][ERROR]: Could not get runs from LHCI API`);
@@ -25897,6 +25920,8 @@ async function run() {
         linksFilePath: path_1.default.resolve(process.cwd(), core.getInput('links-filepath')), // Resolve path
         baseUrl: core.getInput('base-url'),
         projectId: core.getInput('project-id'),
+        basicAuthPassword: core.getInput('basic-auth-password'),
+        basicAuthUsername: core.getInput('basic-auth-username'),
         currentCommitSha: core.getInput('current-commit-sha'),
         shouldFailBuild: core.getInput('should-fail-build') === 'true'
     };
@@ -25944,7 +25969,9 @@ const executeRun = async ({ inputs, debug }) => {
         baseUrl: inputs.baseUrl,
         projectId: inputs.projectId,
         buildId: build.id,
-        ancestorBuildId: ancestorBuild.id
+        ancestorBuildId: ancestorBuild.id,
+        basicAuthUsername: inputs.basicAuthUsername ?? '',
+        basicAuthPassword: inputs.basicAuthPassword ?? ''
     });
     if (core.isDebug()) {
         debug('Printing runs and ancestor runs...');
