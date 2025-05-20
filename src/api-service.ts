@@ -49,7 +49,10 @@ export const getBuilds = async ({
   }
   // get the ancestor of the build from the lighthouse-ci API
   const responseAncestor = await fetch(
-    `${PROJECT_URL}/builds/${build.id}/ancestor`
+    `${PROJECT_URL}/builds/${build.id}/ancestor`,
+    {
+      headers: basicAuthHeaders
+    }
   )
   if (!responseAncestor.ok) {
     let err = ''
