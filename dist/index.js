@@ -25668,7 +25668,9 @@ const getBuilds = async ({ baseUrl, projectId, currentCommitSha, basicAuthUserna
         throw new Error(`[api-service][ERROR]: Could not find build for commit hash {${CURRENT_COMMIT_SHA}}`);
     }
     // get the ancestor of the build from the lighthouse-ci API
-    const responseAncestor = await fetch(`${PROJECT_URL}/builds/${build.id}/ancestor`);
+    const responseAncestor = await fetch(`${PROJECT_URL}/builds/${build.id}/ancestor`, {
+        headers: basicAuthHeaders
+    });
     if (!responseAncestor.ok) {
         let err = '';
         if (responseAncestor.status && responseAncestor.statusText) {
